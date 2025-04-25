@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WebServer.h>
 #include <vector>
 
 #include "secrets.h"
@@ -6,11 +7,20 @@
 
 
 std::vector<WifiNetwork> networks;
+WebServer server(80);
 
 void setup() {
   Serial.begin(115200);
   connectWifi(WIFI_SSID, WIFI_PASS);
+
+  server.on("/", handleRoot);
+  server.begin();
 }
+
+void handleRoot(){
+  server.send(200, "text/plain", "hello world");
+}
+
 
 void connectWifi(const char* ssid, const char* password) {
   Serial.print("Connecting to " + String(ssid) + "...");
@@ -61,5 +71,6 @@ String getBSSIDString(int index) {
 }
 
 void loop() {
+  server.handleClient();
   delay(100);
 }
