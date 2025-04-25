@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <vector>
 
+#include "secrets.h"
 #include "WifiNetwork.h"
 
 
@@ -8,9 +9,24 @@ std::vector<WifiNetwork> networks;
 
 void setup() {
   Serial.begin(115200);
-  getNetworks();
+  connectWifi(WIFI_SSID, WIFI_PASS);
 }
 
+void connectWifi(const char* ssid, const char* password) {
+  Serial.print("Connecting to " + String(ssid) + "...");
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(1000);
+  }
+  
+  Serial.println("\nConnection success");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+
+  delay(200);
+}
 
 void getNetworks() {
   Serial.println("Scanning networks...");
