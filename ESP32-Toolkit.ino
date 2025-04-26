@@ -4,9 +4,11 @@
 
 #include "secrets.h"
 #include "WifiNetwork.h"
+#include "MenuItem.h"
 
 
 std::vector<WifiNetwork> networks;
+std::vector<MenuItem> menus;
 WebServer server(80);
 
 void setup() {
@@ -18,7 +20,27 @@ void setup() {
 }
 
 void handleRoot(){
-  server.send(200, "text/plain", "hello world");
+  server.send(200, "text/html", getMenu("main"));
+}
+
+
+String getMenu(const String& menuName) {
+    std::vector<MenuItem> menuItems = {
+        MenuItem("main", "wifi", "Wifi", ""),
+        MenuItem("main", "bluetooth", "Bluetooth", ""),
+        MenuItem("main", "files", "Files", ""),
+        MenuItem("main", "status", "Status", ""),
+        MenuItem("wifi", "escanear", "Scan", "")
+    };
+
+    String menu = "<html><body><div class='list'>";
+    for (const auto& item : menuItems) {
+        if (item.getCategory() == menuName) {
+            menu += "<a href='/" + item.getUrl() + "'>" + item.getName() + "</a><br>";
+        }
+    }
+    menu += "</div></body></html>";
+    return menu;
 }
 
 
