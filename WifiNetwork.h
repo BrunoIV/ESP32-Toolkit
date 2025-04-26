@@ -5,7 +5,7 @@
 
 class WifiNetwork {
   public:
-    WifiNetwork(String n, int channel, String bssid, String encryptation, int rssi);
+    WifiNetwork(String name, int channel, String bssid, String encryptation, int rssi);
     void printInfo();
     String getName() const;
     int getChannel() const;
