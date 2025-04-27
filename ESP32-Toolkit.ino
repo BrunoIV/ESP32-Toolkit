@@ -18,9 +18,38 @@ void setup() {
 
   server.on("/", handleRoot);
   server.on("/files", handleFiles);
+  server.on("/edit", handleEdit);
   
   server.begin();
 }
+
+void handleEdit() {
+  String html = "";
+  if (server.hasArg("file")) {
+    String filePath = server.arg("file");
+    String text = Storage::readFile(filePath);
+
+    
+    html = Storage::readFile("/editor.html");
+    html.replace("{{FILE_NAME}}", filePath);
+    html.replace("{{TEXT}}", escapeHTML(text));
+    
+  } else {
+    Serial.println("Param 'file' not found");
+  }
+
+  server.send(200, "text/html", html);
+}
+
+String escapeHTML(String input) {
+  input.replace("&", "&amp;");
+  input.replace("<", "&lt;");
+  input.replace(">", "&gt;");
+  input.replace("\"", "&quot;");
+  input.replace("'", "&#39;");
+  return input;
+}
+
 
 String getMainTemplate(String title, String menu) {
   String html = Storage::readFile("/index.html");
