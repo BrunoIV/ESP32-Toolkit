@@ -1,0 +1,47 @@
+<style>
+    .chart {
+        padding: 20px;
+    }
+
+    .chart h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: normal;
+        line-height: 40px;
+    }
+
+    .chart div {
+        border-radius: 5px;
+        padding: 5px 10px;
+        background: linear-gradient(to right, #f33 50%, #ddd 50%);
+        text-align: right;
+        font-size: 14px;
+    }
+
+    .chart p {
+        margin: 10px 15px 0 0;
+        display: inline-block;
+    }
+
+    .chart p::first-letter {
+        color: #f33;
+    }
+
+    .chart p:last-of-type::first-letter {
+        color: #ddd;
+    }
+
+    .chart span {
+        float: right;
+        color: #777;
+        font-size: 16px;
+    }
+
+    </style>
+
+    <div class="chart">
+        <h1>{{CHART_TITLE}} <span>{{1}}KB of {{2}}KB used</span></h1>
+        <div style="background: linear-gradient(to right, #f33 {{VAL1}}%, #ddd {{VAL2}}%)">{{FREE_STORAGE}}KB</div>
+        <p>⬤ Used</p>
+        <p>⬤ Free</p>
+    </div>

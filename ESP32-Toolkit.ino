@@ -6,6 +6,7 @@
 #include "WifiNetwork.h"
 #include "MenuItem.h"
 #include "Storage.h"
+#include "SPIFFS.h"
 
 std::vector<WifiNetwork> networks;
 std::vector<MenuItem> menus;
@@ -21,6 +22,7 @@ void setup() {
   server.on("/files", handleFiles);
   server.on("/edit", handleEdit);
   server.on("/save", HTTP_POST, handleSave);
+  server.on("/status", handleStatus);
 
   server.begin();
 }
@@ -78,6 +80,42 @@ String getMainTemplate(String title, String menu) {
 
 void handleRoot(){
   server.send(200, "text/html", getMainTemplate("ESP32 Toolkit", getMenu("main")));
+}
+
+
+void handleStatus(){
+  size_t totalKb = SPIFFS.totalBytes() / 1024.0;
+  size_t usedKb = SPIFFS.usedBytes() / 1024.0;
+  int8_t percentageUsed = ceil((usedKb * 100.0) / totalKb);  
+
+  String returnHtml = "";
+  
+  String html = Storage::readFile("/chart.html");
+  html.replace("{{CHART_TITLE}}", "Storage");
+  html.replace("{{FREE_STORAGE}}", String(totalKb - usedKb));
+  html.replace("{{VAL1}}", String(percentageUsed));
+  html.replace("{{VAL2}}", String(percentageUsed));
+  html.replace("{{1}}", String(usedKb));
+  html.replace("{{2}}", String(totalKb));
+  returnHtml += html;
+
+  
+  size_t ram_total = heap_caps_get_total_size(MALLOC_CAP_DEFAULT);
+  size_t ram_libre = heap_caps_get_free_size(MALLOC_CAP_DEFAULT);
+  size_t ram_usada = ram_total - ram_libre;
+  int8_t percentageUsedRam = ceil((ram_usada * 100.0) / ram_total);  
+
+  
+  html = Storage::readFile("/chart.html");
+  html.replace("{{CHART_TITLE}}", "RAM");
+  html.replace("{{FREE_STORAGE}}", String(ram_libre / 1024.0));
+  html.replace("{{VAL1}}", String(percentageUsedRam));
+  html.replace("{{VAL2}}", String(percentageUsedRam));
+  html.replace("{{1}}", String(ram_usada / 1024.0));
+  html.replace("{{2}}", String(ram_total / 1024.0));
+  returnHtml += html;
+
+  server.send(200, "text/html", getMainTemplate("Status", returnHtml));
 }
 
 
