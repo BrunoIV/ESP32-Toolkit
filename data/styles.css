@@ -1,0 +1,96 @@
+* {
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+}
+
+body {
+	height: 100%;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #eee;
+    line-height: 60px;
+    padding: 0 10px;
+}
+
+header > div {
+    text-align: center;
+    flex: 1;
+}
+
+header i {
+    padding: 10px;
+    color: #333;
+}
+
+
+q {
+    border-bottom: 1px solid #ccc;
+    color: #000;
+    position: relative;
+    height: 60px;
+    display: block;
+}
+
+
+q::before, q::after { content:'' }
+
+q a {
+    width: calc(100% - 40px);
+    line-height: 40px;
+    text-decoration: none;
+}
+
+q a, q b {
+    margin: 10px 0;
+    float: left;
+    height: 40px;
+    line-height: 40px !important;
+}
+
+/* Icono principio y fin */
+q i, q b {
+    width: 40px;
+    line-height: 40px !important;
+    text-align: center;
+}
+
+q i {
+    background: #f33;
+    color: #fff;
+    border-radius: 50%;
+}
+
+q span {
+    font-size: 18px;
+    padding: 0 10px;
+    width: calc(100% - 80px);
+}
+
+
+q ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    right: 10px;
+    top: 50px;
+    background-color: #fff;
+    z-index: 2;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    border-radius: 5px;
+    min-width: 200px;
+    display: none;
+}
+
+q li {
+    padding: 20px;
+}
+
+q li:hover {
+    background-color: red;
+}
