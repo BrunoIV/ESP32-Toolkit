@@ -17,6 +17,7 @@ void setup() {
   connectWifi(WIFI_SSID, WIFI_PASS);
 
   server.on("/", handleRoot);
+  server.on("/wifi", handleWifi);
   server.on("/files", handleFiles);
   server.on("/edit", handleEdit);
   server.on("/save", HTTP_POST, handleSave);
@@ -97,14 +98,29 @@ void handleFiles(){
 }
 
 
+void handleWifi(){
+  getNetworks();
+
+  String wifiString = "";
+  for (const auto& network : networks) {
+    String rowTemplateString = Storage::readFile("/list_item.html");
+    rowTemplateString.replace("{{FILE}}", network.getName());
+    rowTemplateString.replace("{{URL}}", "/wifiDetails?id=" + network.getName());
+    rowTemplateString.replace("{{ICON}}", "fa fa-wifi");
+
+    wifiString += rowTemplateString;
+  }
+  
+  server.send(200, "text/html", getMainTemplate("WiFi Networks", wifiString));
+}
 
 String getMenu(const String& menuName) {
     std::vector<MenuItem> menuItems = {
-        MenuItem("main", "wifi", "Wifi", ""),
-        MenuItem("main", "bluetooth", "Bluetooth", ""),
-        MenuItem("main", "files", "Files", ""),
-        MenuItem("main", "status", "Status", ""),
-        MenuItem("wifi", "escanear", "Scan", "")
+        MenuItem("main", "wifi", "Wifi", "fa fa-wifi"),
+        MenuItem("main", "bluetooth", "Bluetooth", "fa-brands fa-bluetooth"),
+        MenuItem("main", "files", "Files", "fa fa-folder"),
+        MenuItem("main", "status", "Status", "fa-solid fa-microchip"),
+        MenuItem("wifi", "escanear", "Scan", "fa-solid fa-binoculars")
     };
 
     String menu = "";
@@ -114,7 +130,7 @@ String getMenu(const String& menuName) {
         if (item.getCategory() == menuName) {
             rowTemplateString.replace("{{FILE}}", item.getName());
             rowTemplateString.replace("{{URL}}", item.getUrl());
-            rowTemplateString.replace("{{ICON}}", "fa fa-folder");
+            rowTemplateString.replace("{{ICON}}", item.getIcon());
             menu += rowTemplateString;
         }
     }
