@@ -5,7 +5,7 @@
 #include "secrets.h"
 #include "WifiNetwork.h"
 #include "MenuItem.h"
-
+#include "Storage.h"
 
 std::vector<WifiNetwork> networks;
 std::vector<MenuItem> menus;
@@ -13,15 +13,45 @@ WebServer server(80);
 
 void setup() {
   Serial.begin(115200);
+  Storage::init();
   connectWifi(WIFI_SSID, WIFI_PASS);
 
   server.on("/", handleRoot);
+  server.on("/files", handleFiles);
+  
   server.begin();
 }
 
-void handleRoot(){
-  server.send(200, "text/html", getMenu("main"));
+String getMainTemplate(String title, String menu) {
+  String html = Storage::readFile("/index.html");
+  String stylesText = Storage::readFile("/styles.css");
+  html.replace("{{TITLE}}", title);
+  html.replace("{{MENU}}", menu);
+  html.replace("<link rel='stylesheet' href='styles.css' />", "<style>" + stylesText + "</style>");
+  return html;
 }
+
+void handleRoot(){
+  server.send(200, "text/html", getMainTemplate("ESP32 Toolkit", getMenu("main")));
+}
+
+
+void handleFiles(){
+  std::vector<String> files = Storage::listDir();
+  
+  String stringFiles = "";
+  for (const String& file : files) {
+    String rowTemplateString = Storage::readFile("/list_item.html");
+    rowTemplateString.replace("{{FILE}}", file);
+    rowTemplateString.replace("{{URL}}", "/edit?file=" + file);
+    rowTemplateString.replace("{{ICON}}", "fa fa-folder");
+
+    stringFiles += rowTemplateString;
+  }
+
+  server.send(200, "text/html", getMainTemplate("Files", stringFiles));
+}
+
 
 
 String getMenu(const String& menuName) {
@@ -33,13 +63,17 @@ String getMenu(const String& menuName) {
         MenuItem("wifi", "escanear", "Scan", "")
     };
 
-    String menu = "<html><body><div class='list'>";
+    String menu = "";
     for (const auto& item : menuItems) {
+        String rowTemplateString = Storage::readFile("/list_item.html");
+
         if (item.getCategory() == menuName) {
-            menu += "<a href='/" + item.getUrl() + "'>" + item.getName() + "</a><br>";
+            rowTemplateString.replace("{{FILE}}", item.getName());
+            rowTemplateString.replace("{{URL}}", item.getUrl());
+            rowTemplateString.replace("{{ICON}}", "fa fa-folder");
+            menu += rowTemplateString;
         }
     }
-    menu += "</div></body></html>";
     return menu;
 }
 
