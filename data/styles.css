@@ -21,7 +21,7 @@ a {
     padding: 0 10px;
 }
 
-.row_icons > div {
+.row_icons .expand {
     flex: 1;
 }
 
@@ -31,17 +31,25 @@ header {
     background: #eee;
     line-height: 60px;
     padding: 0 10px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1;
 }
 
 
 header > div {
     text-align: center;
-
 }
 
 header i {
     padding: 10px;
     color: #333;
+}
+
+
+main {
+    margin-top: 60px;
 }
 
 
@@ -76,9 +84,10 @@ q {
 q::before, q::after { content:'' }
 
 q a {
-    width: calc(100% - 40px);
     line-height: 40px;
     text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 q a, q b {
