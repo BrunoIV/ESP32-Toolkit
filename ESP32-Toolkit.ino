@@ -19,7 +19,8 @@ void setup() {
   server.on("/", handleRoot);
   server.on("/files", handleFiles);
   server.on("/edit", handleEdit);
-  
+  server.on("/save", HTTP_POST, handleSave);
+
   server.begin();
 }
 
@@ -39,6 +40,20 @@ void handleEdit() {
   }
 
   server.send(200, "text/html", html);
+}
+
+void handleSave() {
+  if (server.hasArg("fileContent")) {
+    String text = server.arg("fileContent");
+    String name = server.arg("fileName");
+    
+    Storage::writeFile(name, text);
+  } else {
+    Serial.println("Param 'fileContent' not found");
+  }
+
+  server.sendHeader("Location", "/files");
+  server.send(302, "text/plain", "");
 }
 
 String escapeHTML(String input) {
