@@ -31,7 +31,7 @@ std::vector<String> Storage::listDir() {
 void Storage::writeFile(String path, String content) {
     File file = SPIFFS.open(path.c_str(), FILE_WRITE);
     if (!file) {
-        Serial.println("Error opening the file");
+        Serial.println("Error opening the file '" + path + "'");
         return;
     }
 
@@ -49,7 +49,7 @@ boolean Storage::deleteFile(String path) {
 String Storage::readFile(String path) {
   File file = SPIFFS.open(path.c_str());
   if (!file || file.isDirectory()) {
-    Serial.println("Error opening the file");
+    Serial.println("Error opening the file '" + path + "'");
     return "";
   }
 
