@@ -18,12 +18,12 @@ void setup() {
   connectWifi(WIFI_SSID, WIFI_PASS);
 
   server.on("/", handleRoot);
-  server.on("/wifi", handleWifi);
   server.on("/files", handleFiles);
   server.on("/edit", handleEdit);
   server.on("/save", HTTP_POST, handleSave);
   server.on("/status", handleStatus);
-
+  server.on("/scan", handleScanNetworks);
+  
   server.begin();
 }
 
@@ -78,6 +78,7 @@ String getMainTemplate(String title, String menu) {
   return html;
 }
 
+
 void handleRoot(){
   server.send(200, "text/html", getMainTemplate("ESP32 Toolkit", getMenu("main")));
 }
@@ -124,55 +125,52 @@ void handleFiles(){
   
   String stringFiles = "";
   for (const String& file : files) {
-    String rowTemplateString = Storage::readFile("/list_item.html");
-    rowTemplateString.replace("{{FILE}}", file);
-    rowTemplateString.replace("{{URL}}", "/edit?file=" + file);
-    rowTemplateString.replace("{{ICON}}", "fa fa-folder");
-
-    stringFiles += rowTemplateString;
+    MenuItem menu = MenuItem("", "/edit?file=" + file, file, "fa fa-file", std::vector<MenuItem>());
+    stringFiles+= menu.toString();
   }
 
   server.send(200, "text/html", getMainTemplate("Files", stringFiles));
 }
 
 
-void handleWifi(){
+void handleScanNetworks(){
   getNetworks();
 
   String wifiString = "";
   for (const auto& network : networks) {
-    String rowTemplateString = Storage::readFile("/list_item.html");
-    rowTemplateString.replace("{{FILE}}", network.getName());
-    rowTemplateString.replace("{{URL}}", "/wifiDetails?id=" + network.getName());
-    rowTemplateString.replace("{{ICON}}", "fa fa-wifi");
-
-    wifiString += rowTemplateString;
+    MenuItem menu = MenuItem("", "/wifiDetails?id=" + network.getName(), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
+    wifiString+= menu.toString();
   }
   
   server.send(200, "text/html", getMainTemplate("WiFi Networks", wifiString));
 }
 
+
+
 String getMenu(const String& menuName) {
     std::vector<MenuItem> menuItems = {
-        MenuItem("main", "wifi", "Wifi", "fa fa-wifi"),
-        MenuItem("main", "bluetooth", "Bluetooth", "fa-brands fa-bluetooth"),
-        MenuItem("main", "files", "Files", "fa fa-folder"),
-        MenuItem("main", "status", "Status", "fa-solid fa-microchip"),
-        MenuItem("wifi", "escanear", "Scan", "fa-solid fa-binoculars")
+        MenuItem("main", "", "Wifi", "fa fa-wifi", {
+          MenuItem("wifi", "scan", "Scan", "fa-solid fa-binoculars", std::vector<MenuItem>()),
+          MenuItem("wifi", "createNetwork", "Create network", "fa-solid fa-circle-plus", std::vector<MenuItem>()),
+          MenuItem("wifi", "", "Beacon Spam", "fa-solid fa-house-flood-water", {
+            MenuItem("beaconSpam", "rickRoll", "Rick Roll", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
+            MenuItem("beaconSpam", "randomNetworks", "Random", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
+            MenuItem("beaconSpam", "cloneExistant", "Clone Existant", "fa-solid fa-house-flood-water", std::vector<MenuItem>())
+          })
+        }),       
+        
+        MenuItem("main", "bluetooth", "Bluetooth", "fa-brands fa-bluetooth", std::vector<MenuItem>()),
+        MenuItem("main", "files", "Files", "fa fa-folder", std::vector<MenuItem>()),
+        MenuItem("main", "status", "Status", "fa-solid fa-microchip", std::vector<MenuItem>()),
     };
 
-    String menu = "";
+    
+    String menu = "<ul>";
     for (const auto& item : menuItems) {
-        String rowTemplateString = Storage::readFile("/list_item.html");
-
-        if (item.getCategory() == menuName) {
-            rowTemplateString.replace("{{FILE}}", item.getName());
-            rowTemplateString.replace("{{URL}}", item.getUrl());
-            rowTemplateString.replace("{{ICON}}", item.getIcon());
-            menu += rowTemplateString;
-        }
+      menu += item.toString();
     }
-    return menu;
+    
+    return menu + "</ul>";
 }
 
 
