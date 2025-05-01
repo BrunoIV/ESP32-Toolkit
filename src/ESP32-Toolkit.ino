@@ -252,9 +252,7 @@ void getNetworks() {
   int size = WiFi.scanNetworks();
   const String encriptationsName[10] = { "OPEN", "WEP", "WPA PSK", "WPA2 PSK", "WPA WPA2 PSK", "WPA2 ENTERPRISE", "WPA3 PSK", "WPA2 WPA3 PSK", "WAPI_PSK", "MAX" };
   for (int i = 0; i < size; ++i) {
-    String name = WiFi.SSID(i);
-    networks.push_back(WifiNetwork(name, WiFi.channel(i), WiFi.BSSID(i), encriptationsName[WiFi.encryptionType(i)], WiFi.RSSI(i)));
-    networks[i].printInfo();
+    networks.push_back(WifiNetwork(WiFi.SSID(i), WiFi.channel(i), WiFi.BSSID(i), encriptationsName[WiFi.encryptionType(i)], WiFi.RSSI(i)));
   }
 }
 
