@@ -146,3 +146,31 @@ input[type=checkbox]:checked ~ .fa-chevron-down {
     display: none;
 }
 
+
+
+form {
+  padding: 30px 40px;
+}
+
+form > * {
+    width: 100%;
+}
+
+form label {
+  display: inline-block;
+  font-weight: bold;
+}
+
+input[type="text"] {
+  height: 30px;
+  padding: 0 5px;
+  margin-bottom: 10px;
+}
+
+input[type=submit]{
+  height: 36px;
+  background: #f33;
+  color: #fff;
+  border: 0;
+}
+
