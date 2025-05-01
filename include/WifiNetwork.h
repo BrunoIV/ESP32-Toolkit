@@ -5,18 +5,19 @@
 
 class WifiNetwork {
   public:
-    WifiNetwork(String name, int channel, String bssid, String encryptation, int rssi);
+    WifiNetwork(String name, int channel, uint8_t* bssid, String encryptation, int rssi);
     void printInfo();
     String getName() const;
     int getChannel() const;
-    String getBssid() const;
+    uint8_t* getBssid() const;
     String getEncryptation() const;
     int getRssi() const;
+    String getBssidAsString();
 
   private:
     String name;
     int channel;
-    String bssid;
+    uint8_t* bssid;
     String encryptation;
     int rssi; // Signal strength (RSSI)
 };

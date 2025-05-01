@@ -26,6 +26,7 @@ void setup() {
   server.on("/createNetwork", handleCreateNetwork);
   server.on("/doCreateNetwork", HTTP_POST, handleDoCreateNetwork);
   server.on("/stopNetworks", handleStopNetworks);
+  server.on("/deauther", handleDeauther);
 
   server.begin();
 }
@@ -45,11 +46,11 @@ void handleEdit() {
     Serial.println("Param 'file' not found");
   }
 
-  server.send(200, "text/html", html);
+  sendHtml(html);
 }
 
 void handleCreateNetwork() {
-  server.send(200, "text/html", getMainTemplate("Create Network", Storage::readFile("/create_network.html")));
+  sendHtml(getMainTemplate("Create Network", Storage::readFile("/create_network.html")));
 }
 
 
@@ -57,8 +58,7 @@ void handleCreateNetwork() {
 
 void handleStopNetworks() {
   WiFi.softAPdisconnect(true);
-  server.sendHeader("Location", "/");
-  server.send(302, "text/plain", "");
+  redirect("/");
 }
 
 
@@ -72,8 +72,8 @@ void handleSave() {
     Serial.println("Param 'fileContent' not found");
   }
 
-  server.sendHeader("Location", "/files");
-  server.send(302, "text/plain", "");
+  redirect("/files");
+
 }
 
 void handleDoCreateNetwork() {
@@ -83,8 +83,7 @@ void handleDoCreateNetwork() {
     Serial.println("Params not found");
   }
 
-  server.sendHeader("Location", "/");
-  server.send(302, "text/plain", "");
+  redirect("/");
 }
 
 String escapeHTML(String input) {
@@ -108,7 +107,7 @@ String getMainTemplate(String title, String menu) {
 
 
 void handleRoot(){
-  server.send(200, "text/html", getMainTemplate("ESP32 Toolkit", getMenu("main")));
+  sendHtml(getMainTemplate("ESP32 Toolkit", getMenu("main")));
 }
 
 
@@ -144,7 +143,7 @@ void handleStatus(){
   html.replace("{{2}}", String(ram_total / 1024.0));
   returnHtml += html;
 
-  server.send(200, "text/html", getMainTemplate("Status", returnHtml));
+  sendHtml(getMainTemplate("Status", returnHtml));
 }
 
 
@@ -157,7 +156,7 @@ void handleFiles(){
     stringFiles+= menu.toString();
   }
 
-  server.send(200, "text/html", getMainTemplate("Files", stringFiles));
+  sendHtml(getMainTemplate("Files", stringFiles));
 }
 
 
@@ -170,7 +169,32 @@ void handleScanNetworks(){
     wifiString+= menu.toString();
   }
   
-  server.send(200, "text/html", getMainTemplate("WiFi Networks", wifiString));
+  sendHtml(getMainTemplate("WiFi Networks", wifiString));
+}
+
+
+void handleDeauther(){
+  getNetworks();
+
+  String wifiString = "";
+  MenuItem menuAll = MenuItem("", "/death?id=ALL", "All networks", "fa fa-wifi", std::vector<MenuItem>());
+  wifiString+= menuAll.toString();
+
+  for (const auto& network : networks) {
+    MenuItem menu = MenuItem("", "/death?id=" + network.getName(), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
+    wifiString+= menu.toString();
+  }
+  
+  sendHtml(getMainTemplate("Deauther", wifiString));
+}
+
+void sendHtml(String html) {
+  server.send(200, "text/html", html);
+}
+
+void redirect(String path) {
+  server.sendHeader("Location", path);
+  server.send(302, "text/plain", "");
 }
 
 
@@ -181,6 +205,7 @@ String getMenu(const String& menuName) {
           MenuItem("wifi", "scan", "Scan", "fa-solid fa-binoculars", std::vector<MenuItem>()),
           MenuItem("wifi", "createNetwork", "Create network", "fa-solid fa-circle-plus", std::vector<MenuItem>()),
           MenuItem("wifi", "stopNetworks", "Stop networks", "fa-solid fa-stop", std::vector<MenuItem>()),
+          MenuItem("wifi", "deauther", "Deauther", "fa-solid fa-skull", std::vector<MenuItem>()),
           MenuItem("wifi", "", "Beacon Spam", "fa-solid fa-house-flood-water", {
             MenuItem("beaconSpam", "rickRoll", "Rick Roll", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
             MenuItem("beaconSpam", "randomNetworks", "Random", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
@@ -228,7 +253,7 @@ void getNetworks() {
   const String encriptationsName[10] = { "OPEN", "WEP", "WPA PSK", "WPA2 PSK", "WPA WPA2 PSK", "WPA2 ENTERPRISE", "WPA3 PSK", "WPA2 WPA3 PSK", "WAPI_PSK", "MAX" };
   for (int i = 0; i < size; ++i) {
     String name = WiFi.SSID(i);
-    networks.push_back(WifiNetwork(name, WiFi.channel(i), getBSSIDString(i), encriptationsName[WiFi.encryptionType(i)], WiFi.RSSI(i)));
+    networks.push_back(WifiNetwork(name, WiFi.channel(i), WiFi.BSSID(i), encriptationsName[WiFi.encryptionType(i)], WiFi.RSSI(i)));
     networks[i].printInfo();
   }
 }
