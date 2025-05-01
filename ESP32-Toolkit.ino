@@ -23,7 +23,10 @@ void setup() {
   server.on("/save", HTTP_POST, handleSave);
   server.on("/status", handleStatus);
   server.on("/scan", handleScanNetworks);
-  
+  server.on("/createNetwork", handleCreateNetwork);
+  server.on("/doCreateNetwork", HTTP_POST, handleDoCreateNetwork);
+  server.on("/stopNetworks", handleStopNetworks);
+
   server.begin();
 }
 
@@ -45,6 +48,20 @@ void handleEdit() {
   server.send(200, "text/html", html);
 }
 
+void handleCreateNetwork() {
+  server.send(200, "text/html", getMainTemplate("Create Network", Storage::readFile("/create_network.html")));
+}
+
+
+
+
+void handleStopNetworks() {
+  WiFi.softAPdisconnect(true);
+  server.sendHeader("Location", "/");
+  server.send(302, "text/plain", "");
+}
+
+
 void handleSave() {
   if (server.hasArg("fileContent")) {
     String text = server.arg("fileContent");
@@ -56,6 +73,17 @@ void handleSave() {
   }
 
   server.sendHeader("Location", "/files");
+  server.send(302, "text/plain", "");
+}
+
+void handleDoCreateNetwork() {
+  if (server.hasArg("network_name") && server.hasArg("network_password")) {
+    WiFi.softAP(server.arg("network_name"), server.arg("network_password"));
+  } else {
+    Serial.println("Params not found");
+  }
+
+  server.sendHeader("Location", "/");
   server.send(302, "text/plain", "");
 }
 
@@ -152,6 +180,7 @@ String getMenu(const String& menuName) {
         MenuItem("main", "", "Wifi", "fa fa-wifi", {
           MenuItem("wifi", "scan", "Scan", "fa-solid fa-binoculars", std::vector<MenuItem>()),
           MenuItem("wifi", "createNetwork", "Create network", "fa-solid fa-circle-plus", std::vector<MenuItem>()),
+          MenuItem("wifi", "stopNetworks", "Stop networks", "fa-solid fa-stop", std::vector<MenuItem>()),
           MenuItem("wifi", "", "Beacon Spam", "fa-solid fa-house-flood-water", {
             MenuItem("beaconSpam", "rickRoll", "Rick Roll", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
             MenuItem("beaconSpam", "randomNetworks", "Random", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
