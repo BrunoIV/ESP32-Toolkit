@@ -1,27 +1,19 @@
 #include "WifiNetwork.h"
 
 
-WifiNetwork::WifiNetwork(String name, int channel, uint8_t* bssid, String encryptation, int rssi)
-  : name(name), channel(channel), bssid(bssid), encryptation(encryptation), rssi(rssi) {
+WifiNetwork::WifiNetwork(String name, int channel, const uint8_t* bssid_ptr, String encryptation, int rssi)
+: name(name), channel(channel), encryptation(encryptation), rssi(rssi) {
+    memcpy(bssid, bssid_ptr, 6);
 }
 
 String WifiNetwork::getName() const { return name; }
 int WifiNetwork::getChannel() const { return channel; }
-uint8_t* WifiNetwork::getBssid() const { return bssid; }
+const uint8_t* WifiNetwork::getBssid() const { return bssid; }
 String WifiNetwork::getEncryptation() const { return encryptation; }
 int WifiNetwork::getRssi() const { return rssi; }
 
-void WifiNetwork::printInfo() {
-  Serial.print("SSID: ");
-  Serial.print(name);
-  Serial.print(" || Channel: ");
-  Serial.print(channel);
-  Serial.print(" || BSSID: ");
-  Serial.print(getBssidAsString());
-  Serial.print(" || Encryption: ");
-  Serial.print(encryptation);
-  Serial.print(" || RSSI: ");
-  Serial.println(rssi);
+String WifiNetwork::toString() {
+  return "SSID: " + name + " || Channel: " + String(channel) + " || BSSID: " + getBssidAsString();
 }
 
 String WifiNetwork::getBssidAsString() {
