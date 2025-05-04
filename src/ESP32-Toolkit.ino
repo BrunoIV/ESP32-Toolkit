@@ -7,6 +7,7 @@
 #include "MenuItem.h"
 #include "Storage.h"
 #include "SPIFFS.h"
+#include "Deauther.h"
 
 std::vector<WifiNetwork> networks;
 std::vector<MenuItem> menus;
@@ -15,7 +16,10 @@ WebServer server(80);
 void setup() {
   Serial.begin(115200);
   Storage::init();
-  connectWifi(WIFI_SSID, WIFI_PASS);
+
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(WIFI_SSID, WIFI_PASS);
+  delay(100);
 
   server.on("/", handleRoot);
   server.on("/files", handleFiles);
@@ -27,6 +31,8 @@ void setup() {
   server.on("/doCreateNetwork", HTTP_POST, handleDoCreateNetwork);
   server.on("/stopNetworks", handleStopNetworks);
   server.on("/deauther", handleDeauther);
+  server.on("/doStopDeauth", handleStopDeauth);
+
 
   server.begin();
 }
@@ -54,10 +60,13 @@ void handleCreateNetwork() {
 }
 
 
-
-
 void handleStopNetworks() {
   WiFi.softAPdisconnect(true);
+  redirect("/");
+}
+
+void handleStopDeauth() {
+  Deauther::stop();
   redirect("/");
 }
 
@@ -177,15 +186,27 @@ void handleDeauther(){
   getNetworks();
 
   String wifiString = "";
-  MenuItem menuAll = MenuItem("", "/death?id=ALL", "All networks", "fa fa-wifi", std::vector<MenuItem>());
+  MenuItem menuAll = MenuItem("", "/doDeauth?id=ALL", "All networks", "fa fa-wifi", std::vector<MenuItem>());
   wifiString+= menuAll.toString();
 
+  int i=0;
   for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "/death?id=" + network.getName(), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
+    MenuItem menu = MenuItem("", "/doDeauth?id=" + String(i), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
     wifiString+= menu.toString();
+    i++;
   }
   
   sendHtml(getMainTemplate("Deauther", wifiString));
+}
+
+void handleDoDeauth() {
+  if(server.hasArg("id")) {
+    WifiNetwork n = networks[server.arg("id").toInt()];
+    Deauther::start(n);
+    server.send(200, "text/html", n.toString());
+  }
+
+  server.send(200, "text/html", "Err");
 }
 
 void sendHtml(String html) {
@@ -246,7 +267,6 @@ void connectWifi(const char* ssid, const char* password) {
 
 void getNetworks() {
   Serial.println("Scanning networks...");
-  WiFi.mode(WIFI_STA);
   delay(100);
 
   int size = WiFi.scanNetworks();
