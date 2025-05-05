@@ -5,6 +5,7 @@
 #include "secrets.h"
 #include "WifiNetwork.h"
 #include "MenuItem.h"
+#include "BadUSB.h"
 #include "Storage.h"
 #include "SPIFFS.h"
 #include "Deauther.h"
@@ -31,8 +32,11 @@ void setup() {
   server.on("/doCreateNetwork", HTTP_POST, handleDoCreateNetwork);
   server.on("/stopNetworks", handleStopNetworks);
   server.on("/deauther", handleDeauther);
+  server.on("/doDeauth", handleDoDeauth);
   server.on("/doStopDeauth", handleStopDeauth);
 
+
+  server.on("/badUsb", handleBadUsb);
 
   server.begin();
 }
@@ -157,12 +161,17 @@ void handleStatus(){
 
 
 void handleFiles(){
-  std::vector<String> files = Storage::listDir();
+
+  String folder = "/";
+  if(server.hasArg("folder")) {
+    folder = server.arg("folder");
+  }
+
+  std::vector<MenuItem> files = Storage::listDir(folder);
   
   String stringFiles = "";
-  for (const String& file : files) {
-    MenuItem menu = MenuItem("", "/edit?file=" + file, file, "fa fa-file", std::vector<MenuItem>());
-    stringFiles+= menu.toString();
+  for (const auto& file : files) {
+    stringFiles+= file.toString();
   }
 
   sendHtml(getMainTemplate("Files", stringFiles));
@@ -197,6 +206,17 @@ void handleDeauther(){
   }
   
   sendHtml(getMainTemplate("Deauther", wifiString));
+}
+
+void handleBadUsb() {
+  std::vector<MenuItem> files = BadUSB::list();
+  
+  String stringFiles = "";
+  for (const auto& file : files) {
+    stringFiles+= file.toString();
+  }
+
+  sendHtml(getMainTemplate("Bad USB Payloads", stringFiles));
 }
 
 void handleDoDeauth() {
@@ -236,6 +256,7 @@ String getMenu(const String& menuName) {
         
         MenuItem("main", "bluetooth", "Bluetooth", "fa-brands fa-bluetooth", std::vector<MenuItem>()),
         MenuItem("main", "files", "Files", "fa fa-folder", std::vector<MenuItem>()),
+        MenuItem("main", "badUsb", "Bad USB", "fa-brands fa-usb", std::vector<MenuItem>()),
         MenuItem("main", "status", "Status", "fa-solid fa-microchip", std::vector<MenuItem>()),
     };
 
