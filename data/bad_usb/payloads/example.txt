@@ -1,0 +1,5 @@
+REM Example Script
+WINDOWS r
+STRING powershell "echo 'Hello, World!'; pause"
+DELAY 2000
+ENTER
