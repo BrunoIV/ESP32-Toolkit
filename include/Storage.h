@@ -8,7 +8,7 @@
 class Storage {
 public:
     static void init();
-    static std::vector<MenuItem> listDir(String path);
+    static std::vector<MenuItem> listDir(String path, String url);
     static void writeFile(String path, String content);
     static boolean deleteFile(String path);
     static String readFile(String path);

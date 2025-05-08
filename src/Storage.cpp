@@ -11,7 +11,7 @@ void Storage::init() {
     }
 }
 
-std::vector<MenuItem> Storage::listDir(String folder) {
+std::vector<MenuItem> Storage::listDir(String folder, String url) {
     File root = SPIFFS.open("/");
     std::vector<MenuItem> files;
 
@@ -32,7 +32,7 @@ std::vector<MenuItem> Storage::listDir(String folder) {
         filePathWithoutFolder = filePathWithoutFolder.substring(0, filePathWithoutFolder.indexOf("/"));
 
         if(isFile) {
-          MenuItem menu = MenuItem("", "/edit?file=" + String(file.path()), file.name(), "fa fa-file", std::vector<MenuItem>());
+          MenuItem menu = MenuItem("", url + "?file=" + String(file.path()), file.name(), "fa fa-file", std::vector<MenuItem>());
           files.push_back(menu);
         } else {
 
