@@ -37,6 +37,8 @@ void setup() {
 
 
   server.on("/badUsb", handleBadUsb);
+  server.on("/badUsbPayload", handleBadUsbPayload);
+
 
   server.begin();
 }
@@ -58,6 +60,7 @@ void handleEdit() {
 
   sendHtml(html);
 }
+
 
 void handleCreateNetwork() {
   sendHtml(getMainTemplate("Create Network", Storage::readFile("/create_network.html")));
@@ -167,7 +170,7 @@ void handleFiles(){
     folder = server.arg("folder");
   }
 
-  std::vector<MenuItem> files = Storage::listDir(folder);
+  std::vector<MenuItem> files = Storage::listDir(folder, "/edit");
   
   String stringFiles = "";
   for (const auto& file : files) {
@@ -219,6 +222,16 @@ void handleBadUsb() {
   sendHtml(getMainTemplate("Bad USB Payloads", stringFiles));
 }
 
+void handleBadUsbPayload() {
+
+  if(server.hasArg("file")) {
+    BadUSB::run(server.arg("file"));
+  }
+  redirect("/badUsb");
+}
+
+
+
 void handleDoDeauth() {
   if(server.hasArg("id")) {
     WifiNetwork n = networks[server.arg("id").toInt()];
@@ -254,7 +267,11 @@ String getMenu(const String& menuName) {
           })
         }),       
         
-        MenuItem("main", "bluetooth", "Bluetooth", "fa-brands fa-bluetooth", std::vector<MenuItem>()),
+        MenuItem("main", "bluetooth", "Bluetooth", "fa-brands fa-bluetooth", {
+          MenuItem("bluethooth", "bleStart", "Start BLE Spam", "fa-brands fa-bluetooth", std::vector<MenuItem>()),
+          MenuItem("bluethooth", "bleStop", "Stop BLE Spam", "fa-brands fa-bluetooth", std::vector<MenuItem>()),
+        }),
+        
         MenuItem("main", "files", "Files", "fa fa-folder", std::vector<MenuItem>()),
         MenuItem("main", "badUsb", "Bad USB", "fa-brands fa-usb", std::vector<MenuItem>()),
         MenuItem("main", "status", "Status", "fa-solid fa-microchip", std::vector<MenuItem>()),
@@ -317,5 +334,6 @@ String getBSSIDString(int index) {
 
 void loop() {
   server.handleClient();
+
   delay(100);
 }
