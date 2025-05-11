@@ -17,3 +17,12 @@ std::vector<String> Utils::splitString(const String &str, char delimiter) {
   
     return result;
 }
+
+String Utils::escapeHTML(String input) {
+  input.replace("&", "&amp;");
+  input.replace("<", "&lt;");
+  input.replace(">", "&gt;");
+  input.replace("\"", "&quot;");
+  input.replace("'", "&#39;");
+  return input;
+}

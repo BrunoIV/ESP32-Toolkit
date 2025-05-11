@@ -7,6 +7,7 @@
 class Utils {
 public:
     static std::vector<String> splitString(const String &str, char delimiter);
+    static String escapeHTML(String input);
 };
 
 #endif

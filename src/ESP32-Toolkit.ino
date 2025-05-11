@@ -10,6 +10,7 @@
 #include "SPIFFS.h"
 #include "Deauther.h"
 #include "Bluetooth.h"
+#include "Utils.h"
 
 std::vector<WifiNetwork> networks;
 std::vector<MenuItem> menus;
@@ -64,7 +65,7 @@ void handleEdit() {
     
     html = Storage::readFile("/editor.html");
     html.replace("{{FILE_NAME}}", filePath);
-    html.replace("{{TEXT}}", escapeHTML(text));
+    html.replace("{{TEXT}}", Utils::escapeHTML(text));
     
   } else {
     Serial.println("Param 'file' not found");
@@ -131,16 +132,6 @@ void handleDoConnectWifi() {
 
   redirect("/");
 }
-
-String escapeHTML(String input) {
-  input.replace("&", "&amp;");
-  input.replace("<", "&lt;");
-  input.replace(">", "&gt;");
-  input.replace("\"", "&quot;");
-  input.replace("'", "&#39;");
-  return input;
-}
-
 
 String getMainTemplate(String title, String menu) {
   String html = Storage::readFile("/index.html");
