@@ -1,0 +1,29 @@
+{{NETWORKS}}
+
+<script type="text/javascript">
+    window.addEventListener('hashchange', function() {
+        const network = location.hash.substring(1);
+
+        const passwd = prompt('Password for ' + network + ':');
+        if (passwd !== null) {
+            let data = new FormData();
+            data.set('network_name', network);
+            data.set('network_password', passwd);
+
+            fetch('/doConnectWifi', {
+                method: 'POST',
+                body: data
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    alert('Error: ' + response.statusText);
+                }
+            })
+            .catch(error => {
+                alert('Network error: ' + error.message);
+            });
+        }
+    });
+</script>
