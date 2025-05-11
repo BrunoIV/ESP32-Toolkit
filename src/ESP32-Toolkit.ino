@@ -9,6 +9,7 @@
 #include "Storage.h"
 #include "SPIFFS.h"
 #include "Deauther.h"
+#include "Bluetooth.h"
 
 std::vector<WifiNetwork> networks;
 std::vector<MenuItem> menus;
@@ -16,18 +17,26 @@ WebServer server(80);
 
 void setup() {
   Serial.begin(115200);
+
+  Serial.println("Welcome to ESP32-Toolkit");
   Storage::init();
 
-  WiFi.mode(WIFI_AP);
+  WiFi.mode(WIFI_AP_STA);
   WiFi.softAP(WIFI_SSID, WIFI_PASS);
   delay(100);
+
+  
 
   server.on("/", handleRoot);
   server.on("/files", handleFiles);
   server.on("/edit", handleEdit);
   server.on("/save", HTTP_POST, handleSave);
   server.on("/status", handleStatus);
-  server.on("/scan", handleScanNetworks);
+
+  server.on("/connectWifi", handleConnectWifi);
+  server.on("/doConnectWifi", HTTP_POST, handleDoConnectWifi);
+
+
   server.on("/createNetwork", handleCreateNetwork);
   server.on("/doCreateNetwork", HTTP_POST, handleDoCreateNetwork);
   server.on("/stopNetworks", handleStopNetworks);
@@ -39,6 +48,9 @@ void setup() {
   server.on("/badUsb", handleBadUsb);
   server.on("/badUsbPayload", handleBadUsbPayload);
 
+  server.on("/bleStart", handleBleStart);
+  server.on("/bleStop", handleBleStop);
+  
 
   server.begin();
 }
@@ -61,11 +73,19 @@ void handleEdit() {
   sendHtml(html);
 }
 
+void handleBleStart(){
+  Bluetooth::enable();
+  redirect("/");
+}
+
+void handleBleStop(){
+  Bluetooth::disable();
+  redirect("/");
+}
 
 void handleCreateNetwork() {
   sendHtml(getMainTemplate("Create Network", Storage::readFile("/create_network.html")));
 }
-
 
 void handleStopNetworks() {
   WiFi.softAPdisconnect(true);
@@ -95,6 +115,16 @@ void handleSave() {
 void handleDoCreateNetwork() {
   if (server.hasArg("network_name") && server.hasArg("network_password")) {
     WiFi.softAP(server.arg("network_name"), server.arg("network_password"));
+  } else {
+    Serial.println("Params not found");
+  }
+
+  redirect("/");
+}
+
+void handleDoConnectWifi() {
+  if (server.hasArg("network_name") && server.hasArg("network_password")) {
+    connectWifi(server.arg("network_name").c_str(), server.arg("network_password").c_str());
   } else {
     Serial.println("Params not found");
   }
@@ -181,16 +211,18 @@ void handleFiles(){
 }
 
 
-void handleScanNetworks(){
+void handleConnectWifi(){
   getNetworks();
+  String html = Storage::readFile("/templates/wifi/connect.html");
 
   String wifiString = "";
   for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "/wifiDetails?id=" + network.getName(), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
+    MenuItem menu = MenuItem("", "#" + network.getName(), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
     wifiString+= menu.toString();
   }
   
-  sendHtml(getMainTemplate("WiFi Networks", wifiString));
+  html.replace("{{NETWORKS}}", wifiString);
+  sendHtml(getMainTemplate("WiFi Networks", html));
 }
 
 
@@ -256,7 +288,7 @@ void redirect(String path) {
 String getMenu(const String& menuName) {
     std::vector<MenuItem> menuItems = {
         MenuItem("main", "", "Wifi", "fa fa-wifi", {
-          MenuItem("wifi", "scan", "Scan", "fa-solid fa-binoculars", std::vector<MenuItem>()),
+          MenuItem("wifi", "connectWifi", "Connect", "fa-solid fa-binoculars", std::vector<MenuItem>()),
           MenuItem("wifi", "createNetwork", "Create network", "fa-solid fa-circle-plus", std::vector<MenuItem>()),
           MenuItem("wifi", "stopNetworks", "Stop networks", "fa-solid fa-stop", std::vector<MenuItem>()),
           MenuItem("wifi", "deauther", "Deauther", "fa-solid fa-skull", std::vector<MenuItem>()),
@@ -335,5 +367,9 @@ String getBSSIDString(int index) {
 void loop() {
   server.handleClient();
 
+  if (Bluetooth::isRunning()) {
+    Bluetooth::spamBLE();
+  }
+  
   delay(100);
 }
