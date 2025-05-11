@@ -11,6 +11,8 @@
 #include "Deauther.h"
 #include "Bluetooth.h"
 #include "Utils.h"
+#include "SystemStatus.h"
+#include "models/UsageStats.h"
 
 std::vector<WifiNetwork> networks;
 std::vector<MenuItem> menus;
@@ -149,35 +151,27 @@ void handleRoot(){
 
 
 void handleStatus(){
-  size_t totalKb = SPIFFS.totalBytes() / 1024.0;
-  size_t usedKb = SPIFFS.usedBytes() / 1024.0;
-  int8_t percentageUsed = ceil((usedKb * 100.0) / totalKb);  
-
   String returnHtml = "";
   
+  UsageStats storageStatus = SystemStatus::getStorageStatus();
   String html = Storage::readFile("/chart.html");
   html.replace("{{CHART_TITLE}}", "Storage");
-  html.replace("{{FREE_STORAGE}}", String(totalKb - usedKb));
-  html.replace("{{VAL1}}", String(percentageUsed));
-  html.replace("{{VAL2}}", String(percentageUsed));
-  html.replace("{{1}}", String(usedKb));
-  html.replace("{{2}}", String(totalKb));
+  html.replace("{{FREE_STORAGE}}", String(storageStatus.getFreeAsKb()));
+  html.replace("{{VAL1}}", String(storageStatus.getPercentUsed()));
+  html.replace("{{VAL2}}", String(storageStatus.getPercentUsed()));
+  html.replace("{{1}}", String(storageStatus.getUsedAsKb()));
+  html.replace("{{2}}", String(storageStatus.getTotalAsKb()));
   returnHtml += html;
 
-  
-  size_t ram_total = heap_caps_get_total_size(MALLOC_CAP_DEFAULT);
-  size_t ram_libre = heap_caps_get_free_size(MALLOC_CAP_DEFAULT);
-  size_t ram_usada = ram_total - ram_libre;
-  int8_t percentageUsedRam = ceil((ram_usada * 100.0) / ram_total);  
 
-  
+  UsageStats memoryStatus = SystemStatus::getMemoryStatus();
   html = Storage::readFile("/chart.html");
   html.replace("{{CHART_TITLE}}", "RAM");
-  html.replace("{{FREE_STORAGE}}", String(ram_libre / 1024.0));
-  html.replace("{{VAL1}}", String(percentageUsedRam));
-  html.replace("{{VAL2}}", String(percentageUsedRam));
-  html.replace("{{1}}", String(ram_usada / 1024.0));
-  html.replace("{{2}}", String(ram_total / 1024.0));
+  html.replace("{{FREE_STORAGE}}", String(memoryStatus.getFreeAsKb()));
+  html.replace("{{VAL1}}", String(memoryStatus.getPercentUsed()));
+  html.replace("{{VAL2}}", String(memoryStatus.getPercentUsed()));
+  html.replace("{{1}}", String(memoryStatus.getUsedAsKb()));
+  html.replace("{{2}}", String(memoryStatus.getTotalAsKb()));
   returnHtml += html;
 
   sendHtml(getMainTemplate("Status", returnHtml));
