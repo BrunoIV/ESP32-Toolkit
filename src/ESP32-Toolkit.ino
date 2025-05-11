@@ -331,24 +331,6 @@ void getNetworks() {
   }
 }
 
-String getBSSIDString(int index) {
-  uint8_t* bssid = WiFi.BSSID(index);  //BSSID as an array of bytes
-  String bssidStr = "";
-  
-  //Convert to format "XX:XX:XX:XX:XX:XX"
-  for (int i = 0; i < 6; i++) {
-    if (bssid[i] < 0x10) {
-      bssidStr += "0";  // Adds a zero to the left if byte < 16
-    }
-    
-    bssidStr += String(bssid[i], HEX);
-    if (i < 5) {
-      bssidStr += ":";
-    }
-  }
-  return bssidStr;
-}
-
 void loop() {
   server.handleClient();
 
