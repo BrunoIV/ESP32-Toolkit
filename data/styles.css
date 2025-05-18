@@ -1,19 +1,19 @@
+:root {
+    --accent-color: #f33;
+    --accent-color-text: #fff;
+    --border-color: #ccc;
+}
+
 * {
 	padding: 0;
 	margin: 0;
 	box-sizing: border-box;
-}
-
-body {
-	height: 100%;
+    color: #000;
 }
 
 a {
     text-decoration: none;
-    color: #000;
 }
-
-
 
 header {
     background: #eee;
@@ -67,8 +67,8 @@ main {
 
 
 
-
-ul {
+/* List of files, networks, etc */
+ul, ol {
    list-style-type: none;
 }
 
@@ -78,15 +78,13 @@ li ul {
 }
 
 
-li {
-    border-top: 1px solid #ccc;
-    color: #000;
+ul li {
+    border-top: 1px solid var(--border-color);
     position: relative;
-
 }
 
 /* Arrow icons */
-li i {
+ul li i {
     position: absolute;
     right: 20px;
     top: 24px;
@@ -94,18 +92,56 @@ li i {
 }
 
 
-li label, li a {
+ul li label, ul li a {
     padding: 10px;
     display: block;
 }
 
-li li label, li li a {
+ul li li label, ul li li a {
     padding-left: 40px;
 }
 
-li li li label, li li li a {
+ul li li li label, ul li li li a {
     padding-left: 60px;
 }
+
+
+
+/* Floating menu */
+.floating_menu {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+}
+
+.floating_menu > *:not(:first-child) {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: var(--accent-color-text);
+    text-align: center;
+    line-height: 40px;
+    margin-top: 10px;
+}
+
+
+/* Hide all except last */
+.floating_menu > *:not(:last-child) {
+    display: none;
+}
+
+.floating_menu label {
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+}
+
+.floating_menu input[type=checkbox]:checked ~ a {
+    display: block;
+}
+
+
 
 
 
@@ -115,10 +151,10 @@ q {
     height: 40px;
     line-height: 40px !important;
     text-align: center;
-    background: #f33;
+    background: var(--accent-color);
     border-radius:50%;
     margin-right: 20px;
-    color: #fff;
+    color: var(--accent-color-text);
 }
 
 input[type=checkbox] {
@@ -169,8 +205,8 @@ input[type="text"] {
 
 input[type=submit]{
   height: 36px;
-  background: #f33;
-  color: #fff;
+  background: var(--accent-color);
+  color: var(--accent-color-text);
   border: 0;
 }
 

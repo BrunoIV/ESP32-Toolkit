@@ -1,0 +1,43 @@
+<div class="floating_menu">
+    <input type="checkbox" id="check_floating_menu">
+    <a href="javascript:void(0);" onclick="newFile('folder')" class="fa fa-folder"></a>
+    <a href="javascript:void(0);" onclick="newFile('file')" class="fa fa-file"></a>
+    <label for="check_floating_menu" class="fa fa-plus"></label>
+</div>
+
+<script type="text/javascript">
+    function newFile(type) {
+        var url = new URL(window.location.href);
+        var folder = url.searchParams.get("folder");
+
+        if(folder == null || folder == '') {
+            folder = '/';
+        }
+
+        if(!folder.endsWith('/')) {
+            folder += '/';
+        }
+
+        const name = prompt('Name: ');
+        if (name !== null) {
+            let data = new FormData();
+            data.set('name', folder + name);
+            data.set('type', type);
+
+            fetch('/doCreateFile', {
+                method: 'POST',
+                body: data
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    alert('Error: ' + response.statusText);
+                }
+            })
+            .catch(error => {
+                alert('Network error: ' + error.message);
+            });
+        }
+    }
+</script>

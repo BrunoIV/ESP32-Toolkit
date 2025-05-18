@@ -32,8 +32,13 @@ std::vector<MenuItem> Storage::listDir(String folder, String url) {
         filePathWithoutFolder = filePathWithoutFolder.substring(0, filePathWithoutFolder.indexOf("/"));
 
         if(isFile) {
-          MenuItem menu = MenuItem("", url + "?file=" + String(file.path()), file.name(), "fa fa-file", std::vector<MenuItem>());
-          files.push_back(menu);
+
+          //Ignore empty files for fake folders
+          if(String(file.name()) != ".keep") {
+            MenuItem menu = MenuItem("", url + "?file=" + String(file.path()), file.name(), "fa fa-file", std::vector<MenuItem>());
+            files.push_back(menu);
+          }
+
         } else {
 
           bool exists = false;

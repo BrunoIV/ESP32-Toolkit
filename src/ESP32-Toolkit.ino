@@ -26,14 +26,19 @@ void setup() {
 
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAP(WIFI_SSID, WIFI_PASS);
+
   delay(100);
 
   
 
   server.on("/", handleRoot);
+
+  
   server.on("/files", handleFiles);
   server.on("/edit", handleEdit);
   server.on("/save", HTTP_POST, handleSave);
+  server.on("/doCreateFile", HTTP_POST, handleDoCreateFile);
+
   server.on("/status", handleStatus);
 
   server.on("/connectWifi", handleConnectWifi);
@@ -135,6 +140,23 @@ void handleDoConnectWifi() {
   redirect("/");
 }
 
+void handleDoCreateFile() {
+  if (server.hasArg("name") && server.hasArg("type")) {
+    String name = server.arg("name");
+
+    if(server.arg("type") == "folder") {
+      name += "/.keep";
+    }
+
+    Storage::writeFile(name, "");
+  } else {
+    Serial.println("Params not found");
+  }
+
+  redirect("/files");
+}
+
+
 String getMainTemplate(String title, String menu) {
   String html = Storage::readFile("/index.html");
   String stylesText = Storage::readFile("/styles.css");
@@ -192,7 +214,11 @@ void handleFiles(){
     stringFiles+= file.toString();
   }
 
-  sendHtml(getMainTemplate("Files", stringFiles));
+  String tpl = getMainTemplate("Files", stringFiles);
+
+  String floatingMenu = Storage::readFile("/templates/cmn/float_menu.html");
+  tpl.replace("<!-- floating_menu -->", floatingMenu);
+  sendHtml("<ul>" + tpl + "</ul>");
 }
 
 
