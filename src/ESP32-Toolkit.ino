@@ -211,14 +211,14 @@ void handleFiles(){
   
   String stringFiles = "";
   for (const auto& file : files) {
-    stringFiles+= file.toString();
+    stringFiles+= file.getAsDropdownMenu();
   }
 
-  String tpl = getMainTemplate("Files", stringFiles);
+  String tpl = getMainTemplate("Files", "<div class='list'>" + stringFiles + "</div>");
 
   String floatingMenu = Storage::readFile("/templates/cmn/float_menu.html");
   tpl.replace("<!-- floating_menu -->", floatingMenu);
-  sendHtml("<ul>" + tpl + "</ul>");
+  sendHtml(tpl);
 }
 
 
@@ -226,11 +226,12 @@ void handleConnectWifi(){
   getNetworks();
   String html = Storage::readFile("/templates/wifi/connect.html");
 
-  String wifiString = "";
+  String wifiString = "<div class='list'>";
   for (const auto& network : networks) {
     MenuItem menu = MenuItem("", "#" + network.getName(), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
     wifiString+= menu.toString();
   }
+  wifiString += '</div>';
   
   html.replace("{{NETWORKS}}", wifiString);
   sendHtml(getMainTemplate("WiFi Networks", html));
@@ -240,7 +241,7 @@ void handleConnectWifi(){
 void handleDeauther(){
   getNetworks();
 
-  String wifiString = "";
+  String wifiString = "<div class='list'>";
   MenuItem menuAll = MenuItem("", "/doDeauth?id=ALL", "All networks", "fa fa-wifi", std::vector<MenuItem>());
   wifiString+= menuAll.toString();
 
@@ -251,16 +252,18 @@ void handleDeauther(){
     i++;
   }
   
+  wifiString += "</div>";
   sendHtml(getMainTemplate("Deauther", wifiString));
 }
 
 void handleBadUsb() {
   std::vector<MenuItem> files = BadUSB::list();
   
-  String stringFiles = "";
+  String stringFiles = "<div class='list'>";
   for (const auto& file : files) {
     stringFiles+= file.toString();
   }
+  stringFiles += "</div>";
 
   sendHtml(getMainTemplate("Bad USB Payloads", stringFiles));
 }
@@ -321,12 +324,12 @@ String getMenu(const String& menuName) {
     };
 
     
-    String menu = "<ul>";
+    String menu = "<div class='list'>";
     for (const auto& item : menuItems) {
       menu += item.toString();
     }
     
-    return menu + "</ul>";
+    return menu + "</div>";
 }
 
 

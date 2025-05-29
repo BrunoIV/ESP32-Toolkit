@@ -14,6 +14,7 @@ class MenuItem {
     String getIcon() const;
     const std::vector<MenuItem>& getSubItems() const;
     String toString() const;
+    String getAsDropdownMenu() const;
 
   private:
     String category;

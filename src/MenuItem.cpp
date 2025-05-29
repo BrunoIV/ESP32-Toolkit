@@ -17,15 +17,34 @@ const std::vector<MenuItem>& MenuItem::getSubItems() const {
 String MenuItem::toString() const {
   
   if(subItems.empty()) {
-    return "<li><a href='" + url + "'><q class='"+ icon +"'></q>" + name + "</label><i class='fa-solid fa-chevron-right'></i></a></li>";
+    return "<a href='" + url + "'><q class='"+ icon +"'></q>" + name + "<i class='fa-solid fa-chevron-right'></i></a>";
   } else {
-    String output = "<li><label for='check_" + name + "'><q class='"+ icon +"'></q>" + name + "</label><input autocomplete='off' type='checkbox' id='check_" + name + "'><i class='fa-solid fa-chevron-up'></i><i class='fa-solid fa-chevron-down'></i><ul>";
+    String output = "<div><label for='check_" + name + "'><q class='"+ icon +"'></q>" + name + "</label><input autocomplete='off' class='hidden' type='checkbox' id='check_" + name + "'><i class='fa-solid fa-chevron-up'></i><i class='fa-solid fa-chevron-down'></i><div>";
 
     for (const auto& subIt : subItems) {  
       output += subIt.toString();
     }
 
-    output += "</ul>";
+    output += "</div></div>";
     return output;
   }
 }
+
+
+String MenuItem::getAsDropdownMenu() const {
+  
+  if(subItems.empty()) {
+    return "<a href='" + url + "'>" + name + "</a>";
+  } else {
+    String checkbox = "<input class='hidden' type='checkbox' id='dropdown_" + name + "'>";
+    String output = "<div><a href='" + url + "'><q class='"+ icon +"'></q>" + name + "<label for='dropdown_"+ name +"' class='fa-solid fa-ellipsis-vertical'></label></a>" + checkbox + "<div class='dropdown'>";
+
+    for (const auto& subIt : subItems) {  
+      output += subIt.getAsDropdownMenu();
+    }
+
+    output += "</div></div>"; 
+    return output;
+  }
+}
+

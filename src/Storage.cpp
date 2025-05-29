@@ -35,7 +35,10 @@ std::vector<MenuItem> Storage::listDir(String folder, String url) {
 
           //Ignore empty files for fake folders
           if(String(file.name()) != ".keep") {
-            MenuItem menu = MenuItem("", url + "?file=" + String(file.path()), file.name(), "fa fa-file", std::vector<MenuItem>());
+            MenuItem menu = MenuItem("", url + "?file=" + String(file.path()), file.name(), "fa fa-file", {
+              MenuItem("wifi", "renameFile?path=" + String(file.path()), "Rename", "fa-solid fa-edit", std::vector<MenuItem>()),
+              MenuItem("wifi", "deleteFile?path=" + String(file.path()), "Delete", "fa-solid fa-trash", std::vector<MenuItem>())
+            });
             files.push_back(menu);
           }
 
@@ -50,7 +53,10 @@ std::vector<MenuItem> Storage::listDir(String folder, String url) {
           }
 
           if(!exists) {
-            MenuItem menu = MenuItem("", "/files?folder=" + folder + filePathWithoutFolder + "/", filePathWithoutFolder, "fa fa-folder", std::vector<MenuItem>());
+            MenuItem menu = MenuItem("", "/files?folder=" + folder + filePathWithoutFolder + "/", filePathWithoutFolder, "fa fa-folder", {
+              MenuItem("wifi", "renameFile", "Rename", "fa-solid fa-edit", std::vector<MenuItem>()),
+              MenuItem("wifi", "deleteFile", "Delete", "fa-solid fa-trash", std::vector<MenuItem>())
+            });
             files.push_back(menu);
           }
        

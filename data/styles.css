@@ -15,6 +15,19 @@ a {
     text-decoration: none;
 }
 
+.hidden { display: none; }
+
+/* Dropdown menu, floating_menu */
+
+input[type="checkbox"].hidden ~ div {
+    display: none
+}
+
+input[type="checkbox"].hidden:checked ~ div, #check_floating_menu:checked ~ a {
+    display: block;
+}
+
+
 header {
     background: #eee;
     line-height: 60px;
@@ -49,65 +62,59 @@ main {
 }
 
 
-/* Dropdown menu */
-.dropdown > div {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  padding: 12px 16px;
-  z-index: 1;
-  right: 5px;
-}
 
-.dropdown:hover > div {
-  display: block;
+
+.list {
 }
 
 
-
-/* List of files, networks, etc */
-ul, ol {
-   list-style-type: none;
-}
-
-
-li ul {
-    display:none;
-}
-
-
-ul li {
-    border-top: 1px solid var(--border-color);
-    position: relative;
-}
-
-/* Arrow icons */
-ul li i {
-    position: absolute;
-    right: 20px;
-    top: 24px;
-    z-index: -1;
-}
-
-
-ul li label, ul li a {
-    padding: 10px;
+/* Menus (and sub-menus) without more submenus inside */
+.list a {
     display: block;
+    padding: 10px 0 10px 10px;
 }
 
-ul li li label, ul li li a {
+/* With sub-items */
+.list > div > label {
+    display: block;
+    padding: 10px;
+}
+
+
+/*Right icon of list */
+.list a label, .list i  {
+    float: right;
+    height: 40px;
+    line-height: 40px;
+    width: 40px;
+    text-align: center;
+}
+
+/*Sub-menus and sub-sub-menus*/
+.list > div > div, .list > div > div div {
     padding-left: 40px;
 }
 
-ul li li li label, ul li li li a {
-    padding-left: 60px;
+
+/* Dropdown menu */
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    z-index: 1;
+    background-color: #fff;
+}
+
+.dropdown > div {
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    padding: 12px 16px;
 }
 
 
 
-/* Floating menu */
+/* Floating menu (create in files for example) */
 .floating_menu {
     position: absolute;
     right: 20px;
@@ -137,9 +144,8 @@ ul li li li label, ul li li li a {
     display: inline-block;
 }
 
-.floating_menu input[type=checkbox]:checked ~ a {
-    display: block;
-}
+
+
 
 
 
@@ -157,9 +163,6 @@ q {
     color: var(--accent-color-text);
 }
 
-input[type=checkbox] {
-    display: none;
-}
 
 input[type=checkbox]:checked ~ ul {
     display: block;
