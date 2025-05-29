@@ -1,0 +1,39 @@
+#pragma once
+#include <WebServer.h>
+#include <vector>
+#include "WifiNetwork.h"
+
+class ServerManager {
+public:
+    ServerManager();
+    void begin();
+    void handleClient();
+    
+private:
+    std::vector<WifiNetwork> networks;
+    WebServer server{80};
+    void handleRoot();
+    void sendHtml(String html);
+    void redirect(String path);
+    String getMenu(const String& menuName);
+
+    void handleEdit();
+    void handleBleStart();
+    void handleBleStop();
+    void handleCreateNetwork();
+    void handleStopNetworks();
+    void handleStopDeauth();
+    void handleSave();
+    void handleDoCreateNetwork();
+    void handleDoConnectWifi();
+    void handleDoCreateFile();
+    String getMainTemplate(String title, String menu);
+    void handleStatus();
+    void handleFiles();
+    void handleConnectWifi();
+    void handleDeauther();
+    void handleBadUsb();
+    void handleBadUsbPayload();
+    void handleDoDeauth();
+    void getNetworks();
+};
