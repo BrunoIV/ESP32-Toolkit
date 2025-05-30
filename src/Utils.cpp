@@ -26,3 +26,15 @@ String Utils::escapeHTML(String input) {
   input.replace("'", "&#39;");
   return input;
 }
+
+String Utils::randomString(int length) {
+  String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  String result = "";
+
+  for (int i = 0; i < length; i++) {
+    int index = random(characters.length());
+    result += characters[index];
+  }
+
+  return result;
+}
