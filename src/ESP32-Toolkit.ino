@@ -23,6 +23,10 @@ void loop() {
   if (Bluetooth::isRunning()) {
     Bluetooth::spamBLE();
   }
+
+  if (WifiManager::isRunningBeaconSpam()) {
+    WifiManager::beaconSpam();
+  }
   
   delay(100);
 }

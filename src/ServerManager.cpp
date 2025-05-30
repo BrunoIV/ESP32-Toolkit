@@ -1,7 +1,6 @@
 #include "ServerManager.h"
 #include "Storage.h"
 
-#include <WiFi.h>
 #include <WifiManager.h>
 #include <WebServer.h>
 #include "secrets.h"
@@ -33,6 +32,16 @@ ServerManager::ServerManager() {
   server.on("/deauther", [this]() { handleDeauther(); });
   server.on("/doDeauth", [this]() { handleDoDeauth(); });
   server.on("/doStopDeauth", [this]() { handleStopDeauth(); });
+  server.on("/runBeaconSpam", [this]() { 
+    WifiManager::runBeaconSpam();
+    redirect("/"); 
+  });
+
+  server.on("/stopBeaconSpam", [this]() { 
+    WifiManager::stopBeaconSpam();
+    redirect("/"); 
+  });
+
 
   //Bad USB
   server.on("/badUsb", [this]() { handleBadUsb(); });
@@ -44,6 +53,7 @@ ServerManager::ServerManager() {
 
   //System
   server.on("/status", [this]() { handleStatus(); });
+  server.on("/restart", [this]() { SystemStatus::restart(); });
 }
 
 void ServerManager::begin() {
@@ -72,9 +82,8 @@ String ServerManager::getMenu(const String& menuName) {
           MenuItem("wifi", "stopNetworks", "Stop networks", "fa-solid fa-stop", std::vector<MenuItem>()),
           MenuItem("wifi", "deauther", "Deauther", "fa-solid fa-skull", std::vector<MenuItem>()),
           MenuItem("wifi", "", "Beacon Spam", "fa-solid fa-house-flood-water", {
-            MenuItem("beaconSpam", "rickRoll", "Rick Roll", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
-            MenuItem("beaconSpam", "randomNetworks", "Random", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
-            MenuItem("beaconSpam", "cloneExistant", "Clone Existant", "fa-solid fa-house-flood-water", std::vector<MenuItem>())
+            MenuItem("beaconSpam", "runBeaconSpam", "Run", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
+            MenuItem("beaconSpam", "stopBeaconSpam", "Stop", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
           })
         }),       
         
@@ -170,7 +179,7 @@ void ServerManager::handleSave() {
 
 void ServerManager::handleDoCreateNetwork() {
   if (server.hasArg("network_name") && server.hasArg("network_password")) {
-    WiFi.softAP(server.arg("network_name"), server.arg("network_password"));
+    WifiManager::create(server.arg("network_name"), server.arg("network_password"));
   } else {
     Serial.println("Params not found");
   }
