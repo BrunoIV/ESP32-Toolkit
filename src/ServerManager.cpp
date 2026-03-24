@@ -238,6 +238,17 @@ void ServerManager::handleStatus(){
   html.replace("{{2}}", String(memoryStatus.getTotalAsKb()));
   returnHtml += html;
 
+
+  html = Storage::readFile("/templates/status/network.html");
+  html.replace("{{IP}}", WiFi.localIP().toString());
+  html.replace("{{MASK}}", WiFi.subnetMask().toString());
+  html.replace("{{GATEWAY}}", WiFi.gatewayIP().toString());
+  html.replace("{{DNS}}", WiFi.dnsIP().toString());
+  html.replace("{{MAC}}", WiFi.macAddress());
+  html.replace("{{NETWORK}}", WiFi.SSID());
+  html.replace("{{SIGNAL}}", String(WiFi.RSSI()));
+  returnHtml += html;
+
   sendHtml(getMainTemplate("Status", returnHtml));
 }
 
