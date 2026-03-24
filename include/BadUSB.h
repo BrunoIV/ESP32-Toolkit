@@ -7,7 +7,7 @@
 
 class BadUSB {
 public:
-    static std::vector<MenuItem> list();
+    static std::vector<String> list();
     static void run(String file);
 
 private:

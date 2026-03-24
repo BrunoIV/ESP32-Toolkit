@@ -12,8 +12,8 @@
 USBHIDKeyboard Keyboard;
 USBHIDMouse Mouse;
 
-std::vector<MenuItem> BadUSB::list() {
-    return Storage::listDir("/bad_usb/payloads", "/badUsbPayload");
+std::vector<String> BadUSB::list() {
+    return Storage::listDir("/bad_usb/payloads");
 }
 
 void BadUSB::run(String file) {

@@ -254,20 +254,17 @@ void ServerManager::handleStatus(){
 
 
 void ServerManager::handleFiles(){
-
-  String folder = "/";
-  if(server.hasArg("folder")) {
-    folder = server.arg("folder");
-  }
-
-  std::vector<MenuItem> files = Storage::listDir(folder, "/edit");
+  std::vector<String> files = Storage::listDir("/");
   
   String stringFiles = "";
   for (const auto& file : files) {
-    stringFiles+= file.getAsDropdownMenu();
+    stringFiles+= "'" + file + "',";
   }
 
-  String tpl = getMainTemplate("Files", "<div class='list'>" + stringFiles + "</div>");
+  String tplFiles = Storage::readFile("/templates/files.html");
+  tplFiles.replace("/*paths*/", stringFiles);
+
+  String tpl = getMainTemplate("Files", tplFiles);
 
   String floatingMenu = Storage::readFile("/templates/cmn/float_menu.html");
   tpl.replace("<!-- floating_menu -->", floatingMenu);
@@ -310,15 +307,18 @@ void ServerManager::handleDeauther(){
 }
 
 void ServerManager::handleBadUsb() {
-  std::vector<MenuItem> files = BadUSB::list();
-  
-  String stringFiles = "<div class='list'>";
+  std::vector<String> files = BadUSB::list();
+ 
+  String stringFiles = "";
   for (const auto& file : files) {
-    stringFiles+= file.toString();
+    stringFiles+= "'" + file + "',";
   }
-  stringFiles += "</div>";
 
-  sendHtml(getMainTemplate("Bad USB Payloads", stringFiles));
+  String tplFiles = Storage::readFile("/templates/files.html");
+  tplFiles.replace("/*paths*/", stringFiles);
+  tplFiles.replace("/edit?", "/badUsbPayload?");
+
+  sendHtml(getMainTemplate("Bad USB Payloads", tplFiles));
 }
 
 void ServerManager::handleBadUsbPayload() {

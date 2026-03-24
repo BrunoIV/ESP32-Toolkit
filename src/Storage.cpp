@@ -11,9 +11,15 @@ void Storage::init() {
     }
 }
 
-std::vector<MenuItem> Storage::listDir(String folder, String url) {
+/**
+ * @brief Lists the files inside a directory in SPIFFS
+ * 
+ * @param folder Directory path to filter
+ * @return std::vector<String> List of file paths found
+ */
+std::vector<String> Storage::listDir(String folder) {
     File root = SPIFFS.open("/");
-    std::vector<MenuItem> files;
+    std::vector<String> files;
 
     if (!root) {
         Serial.println("Error getting the list of files");
@@ -25,42 +31,8 @@ std::vector<MenuItem> Storage::listDir(String folder, String url) {
     while (file) {
       String filePath = String(file.path());
 
-      if(filePath.startsWith(folder)) {
-
-        String filePathWithoutFolder = filePath.substring(folder.length());
-        bool isFile = filePathWithoutFolder.indexOf("/") <= 0;
-        filePathWithoutFolder = filePathWithoutFolder.substring(0, filePathWithoutFolder.indexOf("/"));
-
-        if(isFile) {
-
-          //Ignore empty files for fake folders
-          if(String(file.name()) != ".keep") {
-            MenuItem menu = MenuItem("", url + "?file=" + String(file.path()), file.name(), "fa fa-file", {
-              MenuItem("wifi", "renameFile?path=" + String(file.path()), "Rename", "fa-solid fa-edit", std::vector<MenuItem>()),
-              MenuItem("wifi", "deleteFile?path=" + String(file.path()), "Delete", "fa-solid fa-trash", std::vector<MenuItem>())
-            });
-            files.push_back(menu);
-          }
-
-        } else {
-
-          bool exists = false;
-          for (const MenuItem& item : files) {
-              if (item.getName() == filePathWithoutFolder) {
-                  exists = true;
-                  break;
-              }
-          }
-
-          if(!exists) {
-            MenuItem menu = MenuItem("", "/files?folder=" + folder + filePathWithoutFolder + "/", filePathWithoutFolder, "fa fa-folder", {
-              MenuItem("wifi", "renameFile", "Rename", "fa-solid fa-edit", std::vector<MenuItem>()),
-              MenuItem("wifi", "deleteFile", "Delete", "fa-solid fa-trash", std::vector<MenuItem>())
-            });
-            files.push_back(menu);
-          }
-       
-        }
+      if(filePath.startsWith(folder) && String(file.name()) != ".keep") {
+        files.push_back(String(file.path()));
       }
 
       file = root.openNextFile();

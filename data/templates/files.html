@@ -1,0 +1,95 @@
+<style>
+  a {
+    cursor: pointer;
+  }
+
+  .back {
+    font-weight: bold;
+  }
+</style>
+
+<!-- floating_menu -->
+<div class="list" id="explorer"></div>
+
+<script>
+const paths = [
+/*paths*/
+];
+
+function createStructure(paths) {
+  const root = {};
+
+  paths.forEach(ruta => {
+    const parts = ruta.split("/").filter(p => p);
+    let node = root;
+
+    parts.forEach(part => {
+      if (!node[part]) node[part] = {};
+      node = node[part];
+    });
+  });
+
+  return root;
+}
+
+const tree = createStructure(paths);
+
+function getNodeFromHash() {
+  const hash = location.hash.slice(1);
+  const parts = hash.split("/").filter(p => p);
+
+  let node = tree;
+
+  for (let part of parts) {
+    if (node[part]) {
+      node = node[part];
+    } else {
+      return tree;
+    }
+  }
+
+  return node;
+}
+
+function render() {
+  const container = document.getElementById("explorer");
+  container.innerHTML = "";
+
+  const hash = location.hash.slice(1);
+  const parts = hash.split("/").filter(p => p);
+  const node = getNodeFromHash();
+
+  if (parts.length > 0) {
+    const aBack = document.createElement("a");
+    aBack.textContent = "⬅️ Back";
+    aBack.classList.add("back");
+    aBack.onclick = () => history.back();
+    container.appendChild(aBack);
+  }
+
+  Object.keys(node).forEach(nombre => {
+    const a = document.createElement("a");
+    const isFile = nombre.includes(".");
+    var icon = isFile ? '📄' : '📁';
+
+    a.innerHTML = icon + ' ' + nombre;
+    a.classList.add(isFile ? "file" : "folder");
+
+    if (isFile) {
+      a.onclick = () => {
+        window.location.href = "/edit?file=/" + [...parts, nombre].join("/");
+      };
+    } else {
+      a.onclick = () => {
+        location.hash = [...parts, nombre].join("/");
+      };
+    }
+
+    container.appendChild(a);
+  });
+}
+
+window.addEventListener("hashchange", render);
+
+render();
+</script>
