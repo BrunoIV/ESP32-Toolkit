@@ -61,7 +61,7 @@ void ServerManager::begin() {
 }
 
 String ServerManager::getMainTemplate(String title, String menu) {
-  String html = Storage::readFile("/index.html");
+  String html = Storage::readFile("/templates/cmn/index.html");
   String stylesText = Storage::readFile("/styles.css");
   html.replace("{{TITLE}}", title);
   html.replace("{{MENU}}", menu);
