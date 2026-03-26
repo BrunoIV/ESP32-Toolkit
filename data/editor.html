@@ -1,14 +1,73 @@
-<!DOCTYPE html>
-<html lang='en'>
-   <head>
-      <meta charset='UTF-8'>
-      <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-   </head>
-   <body>
-      <form action="/save" method="post">
-         <input type="text" name="fileName" style="width: 100%;" value="{{FILE_NAME}}">
-         <textarea style="width: 100%; height: 500px;" name="fileContent">{{TEXT}}</textarea>
-         <input type="submit" value="Save">
-      </form>
-   </body>
-</html>
+<style>
+  form * {
+    background-color: #1e1e1e;
+    color: #fff;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  textarea {
+    outline: none;
+    padding: 0 5px;
+    flex: 1;
+    overflow: auto;
+    border: 0;
+  }
+
+textarea:focus {
+  border: none;
+  outline: none;
+}
+
+  #lines {
+    padding: 3px 5px;
+    text-align: right;
+    border-right: 1px solid #ccc;
+  }
+
+  form {
+    flex: 1;
+    display: flex;
+  }
+</style>
+
+  <form id="save_file" action="/save" method="post">
+     <input style="display: none;"  type="text" name="fileName" style="width: 100%;" value="{{FILE_NAME}}">
+    <div id="lines"></div>
+    <textarea id="editor" rows="10">{{TEXT}}</textarea>
+  </form>
+
+<script>
+    const textarea = document.getElementById("editor");
+    const lines = document.getElementById("lines");
+
+
+    function save() {
+      document.getElementById('save_file').submit();
+    }
+
+    textarea.addEventListener("scroll", () => {
+        lines.scrollTop = textarea.scrollTop;
+    });
+
+    function generateLines() {
+        var max = textarea.value.split('\n').length + 1;
+
+        var text = '';
+        for(var i=1; i <= max; i++) {
+            text += i + "<br>";
+        }
+
+        lines.innerHTML = text;
+    }
+
+
+    textarea.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+        generateLines();
+    }
+    });
+
+    generateLines();
+</script>

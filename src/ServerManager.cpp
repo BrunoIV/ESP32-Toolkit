@@ -126,10 +126,16 @@ void ServerManager::handleEdit() {
     String filePath = server.arg("file");
     String text = Storage::readFile(filePath);
 
+
+    
     
     html = Storage::readFile("/editor.html");
     html.replace("{{FILE_NAME}}", filePath);
     html.replace("{{TEXT}}", Utils::escapeHTML(text));
+
+    String fullPage = getMainTemplate(filePath, html);
+    fullPage.replace("<!-- right_icons -->", "<a onclick='save()' href='#'>💾</a>");
+    sendHtml(fullPage);
     
   } else {
     Serial.println("Param 'file' not found");
