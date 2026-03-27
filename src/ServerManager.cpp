@@ -134,7 +134,7 @@ void ServerManager::handleEdit() {
     html.replace("{{TEXT}}", Utils::escapeHTML(text));
 
     String fullPage = getMainTemplate(filePath, html);
-    fullPage.replace("<!-- right_icons -->", "<a onclick='save()' href='#'><svg><use href='#home' /></svg></a>");
+    fullPage.replace("<!-- right_icons -->", "<a onclick='save()' href='#'><svg><use href='#save' /></svg></a>");
     sendHtml(fullPage);
     
   } else {
