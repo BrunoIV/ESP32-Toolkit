@@ -17,7 +17,7 @@ const std::vector<MenuItem>& MenuItem::getSubItems() const {
 String MenuItem::toString() const {
   
   if(subItems.empty()) {
-    return "<a href='" + url + "'><svg><use href='#"+ icon +"' /></svg>" + name + "<i class='fa-solid fa-chevron-right'></i></a>";
+    return "<a href='" + url + "'><svg><use href='#"+ icon +"' /></svg>" + name + "</a>";
   } else {
     String output = "<div><label for='check_" + name + "'><svg><use href='#" + icon + "' /></svg>" + name + "</label><input autocomplete='off' class='hidden' type='checkbox' id='check_" + name + "'><div>";
 
