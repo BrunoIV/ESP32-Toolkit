@@ -76,25 +76,25 @@ void ServerManager::handleRoot() {
 
 String ServerManager::getMenu(const String& menuName) {
     std::vector<MenuItem> menuItems = {
-        MenuItem("main", "", "Wifi", "fa fa-wifi", {
-          MenuItem("wifi", "connectWifi", "Connect", "fa-solid fa-binoculars", std::vector<MenuItem>()),
-          MenuItem("wifi", "createNetwork", "Create network", "fa-solid fa-circle-plus", std::vector<MenuItem>()),
-          MenuItem("wifi", "stopNetworks", "Stop networks", "fa-solid fa-stop", std::vector<MenuItem>()),
-          MenuItem("wifi", "deauther", "Deauther", "fa-solid fa-skull", std::vector<MenuItem>()),
-          MenuItem("wifi", "", "Beacon Spam", "fa-solid fa-house-flood-water", {
-            MenuItem("beaconSpam", "runBeaconSpam", "Run", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
-            MenuItem("beaconSpam", "stopBeaconSpam", "Stop", "fa-solid fa-house-flood-water", std::vector<MenuItem>()),
+        MenuItem("main", "", "Wifi", "wifi", {
+          MenuItem("wifi", "connectWifi", "Connect", "connect", std::vector<MenuItem>()),
+          MenuItem("wifi", "createNetwork", "Create network", "plus", std::vector<MenuItem>()),
+          MenuItem("wifi", "stopNetworks", "Stop networks", "stop", std::vector<MenuItem>()),
+          MenuItem("wifi", "deauther", "Deauther", "skull", std::vector<MenuItem>()),
+          MenuItem("wifi", "", "Beacon Spam", "flood", {
+            MenuItem("beaconSpam", "runBeaconSpam", "Run", "flood", std::vector<MenuItem>()),
+            MenuItem("beaconSpam", "stopBeaconSpam", "Stop", "flood", std::vector<MenuItem>()),
           })
         }),       
         
-        MenuItem("main", "bluetooth", "Bluetooth", "fa-brands fa-bluetooth", {
-          MenuItem("bluethooth", "bleStart", "Start BLE Spam", "fa-brands fa-bluetooth", std::vector<MenuItem>()),
-          MenuItem("bluethooth", "bleStop", "Stop BLE Spam", "fa-brands fa-bluetooth", std::vector<MenuItem>()),
+        MenuItem("main", "bluetooth", "Bluetooth", "bluetooth", {
+          MenuItem("bluethooth", "bleStart", "Start BLE Spam", "bluetooth", std::vector<MenuItem>()),
+          MenuItem("bluethooth", "bleStop", "Stop BLE Spam", "bluetooth", std::vector<MenuItem>()),
         }),
         
-        MenuItem("main", "files", "Files", "fa fa-folder", std::vector<MenuItem>()),
-        MenuItem("main", "badUsb", "Bad USB", "fa-brands fa-usb", std::vector<MenuItem>()),
-        MenuItem("main", "status", "Status", "fa-solid fa-microchip", std::vector<MenuItem>()),
+        MenuItem("main", "files", "Files", "folder", std::vector<MenuItem>()),
+        MenuItem("main", "badUsb", "Bad USB", "usb", std::vector<MenuItem>()),
+        MenuItem("main", "status", "Status", "chip", std::vector<MenuItem>()),
     };
 
     
@@ -134,7 +134,7 @@ void ServerManager::handleEdit() {
     html.replace("{{TEXT}}", Utils::escapeHTML(text));
 
     String fullPage = getMainTemplate(filePath, html);
-    fullPage.replace("<!-- right_icons -->", "<a onclick='save()' href='#'>💾</a>");
+    fullPage.replace("<!-- right_icons -->", "<a onclick='save()' href='#'><svg><use href='#home' /></svg></a>");
     sendHtml(fullPage);
     
   } else {
@@ -284,7 +284,7 @@ void ServerManager::handleConnectWifi(){
 
   String wifiString = "<div class='list'>";
   for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "#" + network.getName(), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
+    MenuItem menu = MenuItem("", "#" + network.getName(), network.getName(), "wifi", std::vector<MenuItem>());
     wifiString+= menu.toString();
   }
   wifiString += "</div>";
@@ -298,12 +298,12 @@ void ServerManager::handleDeauther(){
   networks = WifiManager::getNetworks();
 
   String wifiString = "<div class='list'>";
-  MenuItem menuAll = MenuItem("", "/doDeauth?id=ALL", "All networks", "fa fa-wifi", std::vector<MenuItem>());
+  MenuItem menuAll = MenuItem("", "/doDeauth?id=ALL", "All networks", "wifi", std::vector<MenuItem>());
   wifiString+= menuAll.toString();
 
   int i=0;
   for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "/doDeauth?id=" + String(i), network.getName(), "fa fa-wifi", std::vector<MenuItem>());
+    MenuItem menu = MenuItem("", "/doDeauth?id=" + String(i), network.getName(), "wifi", std::vector<MenuItem>());
     wifiString+= menu.toString();
     i++;
   }

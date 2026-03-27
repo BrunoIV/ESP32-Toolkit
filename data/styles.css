@@ -4,13 +4,13 @@
     --border-color: #ccc;
     --header-height: 56px;
     --row-height: 40px;
+    --text-color: #000;
 }
 
 * {
 	padding: 0;
 	margin: 0;
 	box-sizing: border-box;
-    color: #000;
 }
 
 
@@ -20,6 +20,7 @@ body {
 
 a {
     text-decoration: none;
+    color: var(--text-color);
 }
 
 .hidden { display: none; }
@@ -35,11 +36,9 @@ input[type="checkbox"].hidden:checked ~ div, #check_floating_menu:checked ~ a {
 }
 
 
-
-
-
 header {
-    background: #eee;
+    background: var(--accent-color);
+    color: var(--accent-color-text);
     line-height: var(--header-height);
     position: fixed;
     width: 100%;
@@ -72,10 +71,19 @@ main {
 svg {
     max-width: 100%;
     max-height: 100%;
-    padding: 15px;
+    padding: 22%;
+    fill: var(--accent-color-text);
 }
 
-
+.list svg {
+    width: 40px;
+    height: 40px;
+    background: var(--accent-color);
+    border-radius:50%;
+    margin-right: 20px;
+    padding: 8px;
+    vertical-align: middle;
+}
 
 .list {
 }
@@ -165,67 +173,11 @@ svg {
 
 
 /* Menu icon */
-q {
-    width: 40px;
-    height: 40px;
-    line-height: 40px !important;
-    text-align: center;
-    background: var(--accent-color);
-    border-radius:50%;
-    margin-right: 20px;
-    color: var(--accent-color-text);
-}
-
-
 input[type=checkbox]:checked ~ ul {
     display: block;
 }
 
-input[type=checkbox] ~ .fa-chevron-up {
-    display: none;
-}
 
-
-input[type=checkbox] ~ .fa-chevron-down {
-    display: inline;
-}
-
-input[type=checkbox]:checked ~ .fa-chevron-up {
-    display: inline;
-}
-
-input[type=checkbox]:checked ~ .fa-chevron-down {
-    display: none;
-}
-
-
-/*
-form {
-  padding: 30px 40px;
-}
-
-form > * {
-    width: 100%;
-}
-
-form label {
-  display: inline-block;
-  font-weight: bold;
-}
-
-input[type="text"] {
-  height: 30px;
-  padding: 0 5px;
-  margin-bottom: 10px;
-}
-
-input[type=submit]{
-  height: 36px;
-  background: var(--accent-color);
-  color: var(--accent-color-text);
-  border: 0;
-}
-*/
 .p {
     padding: 1.2rem;
 }

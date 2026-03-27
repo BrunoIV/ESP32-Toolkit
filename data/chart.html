@@ -2,9 +2,7 @@
     .chart div {
         border-radius: 5px;
         padding: 5px 10px;
-        background: linear-gradient(to right, #f33 50%, #ddd 50%);
         text-align: right;
-        font-size: 14px;
     }
 
     .chart p {
@@ -13,7 +11,7 @@
     }
 
     .chart p::first-letter {
-        color: #f33;
+        color: var(--accent-color);
     }
 
     .chart p:last-of-type::first-letter {
@@ -30,7 +28,7 @@
 
     <div class="chart p">
         <h3>{{CHART_TITLE}} <span>{{1}}KB of {{2}}KB used</span></h3>
-        <div style="background: linear-gradient(to right, #f33 {{VAL1}}%, #ddd {{VAL2}}%)">{{FREE_STORAGE}}KB</div>
+        <div style="background: linear-gradient(to right, var(--accent-color) {{VAL1}}%, #ddd {{VAL2}}%)">{{FREE_STORAGE}}KB</div>
         <p>⬤ Used</p>
         <p>⬤ Free</p>
     </div>
