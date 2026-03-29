@@ -1,48 +1,54 @@
 #include "Storage.h"
 #include "MenuItem.h"
-#include "SPIFFS.h"
+#include <LittleFS.h>
 
-#define FORMAT_SPIFFS_IF_FAILED true
+#define FORMAT_LittleFS_IF_FAILED true
 #define FILEBUFSIZ 4096
 
 void Storage::init() {
-    if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
-        Serial.println("SPIFFS Mount Failed");
-    }
+  if (!LittleFS.begin(true)) { //format if fails
+    Serial.println("LittleFS Mount Failed");
+  }
 }
 
 /**
- * @brief Lists the files inside a directory in SPIFFS
+ * @brief Lists the files inside a directory in LittleFS
  * 
  * @param folder Directory path to filter
  * @return std::vector<String> List of file paths found
  */
 std::vector<String> Storage::listDir(String folder) {
-    File root = SPIFFS.open("/");
-    std::vector<String> files;
+  std::vector<String> files;
 
-    if (!root) {
-        Serial.println("Error getting the list of files");
-        return files;
-    }
-
-    File file = root.openNextFile();
-
-    while (file) {
-      String filePath = String(file.path());
-
-      if(filePath.startsWith(folder) && String(file.name()) != ".keep") {
-        files.push_back(String(file.path()));
-      }
-
-      file = root.openNextFile();
-    }
-
+  File root = LittleFS.open(folder);
+  if (!root || !root.isDirectory()) {
+    Serial.println("Error opening directory");
     return files;
+  }
+
+  File file = root.openNextFile();
+
+  while (file) {
+    if (file.isDirectory()) {
+      std::vector<String> subFiles = listDir(String(file.path()));
+      files.insert(files.end(), subFiles.begin(), subFiles.end());
+    } else {
+      files.push_back(String(file.path()));
+    }
+
+    file = root.openNextFile();
+  }
+
+  return files;
 }
 
+boolean Storage::mkdir(String path) {
+  return LittleFS.mkdir(path);
+}
+
+
 void Storage::writeFile(String path, String content) {
-    File file = SPIFFS.open(path.c_str(), FILE_WRITE);
+    File file = LittleFS.open(path.c_str(), FILE_WRITE);
     if (!file) {
         Serial.println("Error opening the file '" + path + "'");
         return;
@@ -56,11 +62,11 @@ void Storage::writeFile(String path, String content) {
 }
 
 boolean Storage::deleteFile(String path) {
-  return SPIFFS.remove(path.c_str());
+  return LittleFS.remove(path.c_str());
 }
 
 String Storage::readFile(String path) {
-  File file = SPIFFS.open(path.c_str());
+  File file = LittleFS.open(path.c_str());
   if (!file || file.isDirectory()) {
     Serial.println("Error opening the file '" + path + "'");
     return "";

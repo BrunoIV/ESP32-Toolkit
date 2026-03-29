@@ -7,7 +7,6 @@
 #include "WifiNetwork.h"
 #include "MenuItem.h"
 #include "BadUSB.h"
-#include "SPIFFS.h"
 #include "Deauther.h"
 #include "Bluetooth.h"
 #include "Utils.h"
@@ -30,6 +29,7 @@ ServerManager::ServerManager() {
   server.on("/doConnectWifi", HTTP_POST, [this]() { handleDoConnectWifi(); });
   server.on("/createNetwork", [this]() { handleCreateNetwork(); });
   server.on("/doCreateNetwork", HTTP_POST, [this]() { handleDoCreateNetwork(); });
+  server.on("/doCreateFile", HTTP_POST, [this]() { handleDoCreateFile(); });
   server.on("/stopNetworks", [this]() { handleStopNetworks(); });
   server.on("/deauther", [this]() { handleDeauther(); });
   server.on("/doDeauth", [this]() { handleDoDeauth(); });
@@ -136,7 +136,7 @@ void ServerManager::handleEdit() {
 
 
 void ServerManager::handleBluetooth(){
-  String details = Storage::readFile("/templates/blue/blue.html"); //SPIFFS limitations
+  String details = Storage::readFile("/templates/bluetooth/bluetooth.html");
   String tpl = getMainTemplate("WiFi Networks", details);
 //  tpl.replace("<!-- right_icons -->", "<a onclick='history.back()' href='#'><svg><use href='#save' /></svg></a>");
   sendHtml(tpl);
@@ -206,15 +206,14 @@ void ServerManager::handleDoCreateFile() {
     String name = server.arg("name");
 
     if(server.arg("type") == "folder") {
-      name += "/.keep";
+      Storage::mkdir(name);
+    } else {
+      Storage::writeFile(name, "");
     }
 
-    Storage::writeFile(name, "");
   } else {
     Serial.println("Params not found");
   }
-
-  redirect("/files");
 }
 
 

@@ -12,6 +12,7 @@ public:
     static void writeFile(String path, String content);
     static boolean deleteFile(String path);
     static String readFile(String path);
+    static boolean mkdir(String path);
 };
 
 #endif

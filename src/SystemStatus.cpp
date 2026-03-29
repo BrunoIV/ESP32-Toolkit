@@ -1,8 +1,8 @@
 #include "SystemStatus.h"
-#include "SPIFFS.h"
+#include <LittleFS.h>
 
 UsageStats SystemStatus::getStorageStatus() {
-    return UsageStats(SPIFFS.totalBytes(), SPIFFS.usedBytes());
+    return UsageStats(LittleFS.totalBytes(), LittleFS.usedBytes());
 }
 
 UsageStats SystemStatus::getMemoryStatus() {
