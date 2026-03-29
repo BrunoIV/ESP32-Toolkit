@@ -13,7 +13,9 @@
 #include "Utils.h"
 #include "SystemStatus.h"
 #include "models/UsageStats.h"
+#include <map>
 
+//#include <ESPAsyncWebServer.h>
 
 ServerManager::ServerManager() {
   server.on("/", [this]() { handleRoot(); });
@@ -24,7 +26,7 @@ ServerManager::ServerManager() {
   server.on("/save", HTTP_POST, [this]() { handleSave(); });
 
   //WiFi
-  server.on("/connectWifi", [this]() { handleConnectWifi(); });
+  server.on("/wifi", [this]() { handleWifiList(); });
   server.on("/doConnectWifi", HTTP_POST, [this]() { handleDoConnectWifi(); });
   server.on("/createNetwork", [this]() { handleCreateNetwork(); });
   server.on("/doCreateNetwork", HTTP_POST, [this]() { handleDoCreateNetwork(); });
@@ -48,6 +50,7 @@ ServerManager::ServerManager() {
   server.on("/badUsbPayload", [this]() { handleBadUsbPayload(); });
 
   //Bluetooth
+  server.on("/bluetooth", [this]() { handleBluetooth(); });
   server.on("/bleStart", [this]() { handleBleStart(); });
   server.on("/bleStop", [this]() { handleBleStop(); });
 
@@ -76,25 +79,11 @@ void ServerManager::handleRoot() {
 
 String ServerManager::getMenu(const String& menuName) {
     std::vector<MenuItem> menuItems = {
-        MenuItem("main", "", "Wifi", "wifi", {
-          MenuItem("wifi", "connectWifi", "Connect", "connect", std::vector<MenuItem>()),
-          MenuItem("wifi", "createNetwork", "Create network", "plus", std::vector<MenuItem>()),
-          MenuItem("wifi", "stopNetworks", "Stop networks", "stop", std::vector<MenuItem>()),
-          MenuItem("wifi", "deauther", "Deauther", "skull", std::vector<MenuItem>()),
-          MenuItem("wifi", "", "Beacon Spam", "flood", {
-            MenuItem("beaconSpam", "runBeaconSpam", "Run", "flood", std::vector<MenuItem>()),
-            MenuItem("beaconSpam", "stopBeaconSpam", "Stop", "flood", std::vector<MenuItem>()),
-          })
-        }),       
-        
-        MenuItem("main", "bluetooth", "Bluetooth", "bluetooth", {
-          MenuItem("bluethooth", "bleStart", "Start BLE Spam", "bluetooth", std::vector<MenuItem>()),
-          MenuItem("bluethooth", "bleStop", "Stop BLE Spam", "bluetooth", std::vector<MenuItem>()),
-        }),
-        
-        MenuItem("main", "files", "Files", "folder", std::vector<MenuItem>()),
-        MenuItem("main", "badUsb", "Bad USB", "usb", std::vector<MenuItem>()),
-        MenuItem("main", "status", "Status", "chip", std::vector<MenuItem>()),
+        MenuItem("main", "wifi", "Wifi", "wifi", {}),
+        MenuItem("main", "bluetooth", "Bluetooth", "bluetooth",{}),
+        MenuItem("main", "files", "Files", "folder",{}),
+        MenuItem("main", "badUsb", "Bad USB", "usb",{}),
+        MenuItem("main", "status", "Status", "chip",{}),
     };
 
     
@@ -142,6 +131,15 @@ void ServerManager::handleEdit() {
   }
 
   sendHtml(html);
+}
+
+
+
+void ServerManager::handleBluetooth(){
+  String details = Storage::readFile("/templates/blue/blue.html"); //SPIFFS limitations
+  String tpl = getMainTemplate("WiFi Networks", details);
+//  tpl.replace("<!-- right_icons -->", "<a onclick='history.back()' href='#'><svg><use href='#save' /></svg></a>");
+  sendHtml(tpl);
 }
 
 void ServerManager::handleBleStart(){
@@ -278,32 +276,37 @@ void ServerManager::handleFiles(){
 }
 
 
-void ServerManager::handleConnectWifi(){
-  networks = WifiManager::getNetworks();
-  String html = Storage::readFile("/templates/wifi/connect.html");
+
+void ServerManager::handleWifiList(){
+  if (networks.empty()) {
+    networks = WifiManager::getNetworks();
+  }
 
   String wifiString = "<div class='list'>";
+  int i = 0;
   for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "#" + network.getName(), network.getName(), "wifi", std::vector<MenuItem>());
+    MenuItem menu = MenuItem("", "#network_" + String(i), network.getName(), "wifi", { {"onclick", "showDetail(\"" + network.getAsJson() + "\")" } });
     wifiString+= menu.toString();
+    i++;
   }
   wifiString += "</div>";
-  
-  html.replace("{{NETWORKS}}", wifiString);
-  sendHtml(getMainTemplate("WiFi Networks", html));
-}
+  String details = Storage::readFile("/templates/wifi/details.html");
+  String tpl = getMainTemplate("WiFi Networks", wifiString + details);
+  tpl.replace("<!-- right_icons -->", "<a onclick='history.back()' href='#'><svg><use href='#save' /></svg></a>");
 
+  sendHtml(tpl);
+}
 
 void ServerManager::handleDeauther(){
   networks = WifiManager::getNetworks();
 
   String wifiString = "<div class='list'>";
-  MenuItem menuAll = MenuItem("", "/doDeauth?id=ALL", "All networks", "wifi", std::vector<MenuItem>());
+  MenuItem menuAll = MenuItem("", "/doDeauth?id=ALL", "All networks", "wifi", {});
   wifiString+= menuAll.toString();
 
   int i=0;
   for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "/doDeauth?id=" + String(i), network.getName(), "wifi", std::vector<MenuItem>());
+    MenuItem menu = MenuItem("", "/doDeauth?id=" + String(i), network.getName(), "wifi", {});
     wifiString+= menu.toString();
     i++;
   }

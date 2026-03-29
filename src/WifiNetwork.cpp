@@ -16,7 +16,7 @@ String WifiNetwork::toString() {
   return "SSID: " + name + " || Channel: " + String(channel) + " || BSSID: " + getBssidAsString();
 }
 
-String WifiNetwork::getBssidAsString() {
+String WifiNetwork::getBssidAsString() const {
   String bssidStr = "";
   
   //Convert to format "XX:XX:XX:XX:XX:XX"
@@ -31,4 +31,8 @@ String WifiNetwork::getBssidAsString() {
     }
   }
   return bssidStr;
+}
+
+String WifiNetwork::getAsJson() const {
+  return "{\\\"name\\\": \\\"" + name + "\\\", \\\"channel\\\": \\\"" + String(channel) + "\\\", \\\"encryptation\\\": \\\"" + encryptation + "\\\", \\\"rssi\\\": \\\"" + String(rssi) + "\\\", \\\"bssid\\\": \\\"" + getBssidAsString() + "\\\", \\\"distance\\\": \\\"0\\\"}";
 }

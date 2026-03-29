@@ -2,26 +2,25 @@
 #define MENUITEM_H
 
 #include <Arduino.h>
-#include <vector>
+#include <map>
 
 class MenuItem {
   public:
-    MenuItem(String category, String url, String name, String icon, const std::vector<MenuItem>& subItems);
+    MenuItem(String category, String url, String name, String icon, std::map<String, String> extraAttributes);
 
     String getCategory() const;
     String getUrl() const;
     String getName() const;
     String getIcon() const;
-    const std::vector<MenuItem>& getSubItems() const;
+    std::map<String, String> getExtraAttributes() const;
     String toString() const;
-    String getAsDropdownMenu() const;
 
   private:
     String category;
     String url;
     String name;
     String icon;
-    std::vector<MenuItem> subItems;
+    std::map<String, String> extraAttributes;
 };
 
 #endif

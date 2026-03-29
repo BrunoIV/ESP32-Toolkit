@@ -13,7 +13,8 @@ class WifiNetwork {
     const uint8_t* getBssid() const;
     String getEncryptation() const;
     int getRssi() const;
-    String getBssidAsString();
+    String getBssidAsString() const;
+    String getAsJson() const;
 
   private:
     String name;

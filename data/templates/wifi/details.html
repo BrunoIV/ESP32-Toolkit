@@ -1,0 +1,116 @@
+<template id="card-template">
+  <div class="card">
+    <h2></h2>
+    <table>
+      <tr>
+        <td>Channel</td>
+        <td id="channel"></td>
+      </tr>
+
+      <tr>
+        <td>BSSID</td>
+        <td id="bssid"></td>
+      </tr>
+
+      <tr>
+        <td>encryptation</td>
+        <td id="encryptation"></td>
+      </tr>
+
+      <tr>
+        <td>RSSI</td>
+        <td id="rssi"></td>
+      </tr>
+
+      <tr>
+        <td>Distance (estimated)</td>
+        <td id="distance"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card card-buttons">
+    <a onclick="connect()"><svg><use href="#connect" /></svg> <span>Connect</span></a>
+    <a onclick="deauth()"><svg><use href="#skull" /></svg> <span>Deauth</span></a>
+    <a onclick="beaconSpam()"><svg><use href="#flood" /></svg> <span>Beacon Spam</span></a>
+  </div>
+
+</template>
+
+<div id="card-container"></div>
+
+<script>
+  var selectedNetwork = '';
+
+  window.addEventListener('hashchange', function() {
+    selectedNetwork = getId();
+    if(selectedNetwork.trim()=='') {
+      document.querySelector('.list').style.display = 'block';
+      document.getElementById('card-container').innerHTML = '';
+
+    } else {
+      document.querySelector('.list').style.display = 'none';
+    }
+  });
+
+
+  function connect() {
+    const passwd = prompt('Password for the network:');
+    if (passwd !== null) {
+      let data = new FormData();
+      data.set('network_name', selectedNetwork);
+      data.set('network_password', passwd);
+
+      fetch('/doConnectWifi', {
+        method: 'POST',
+        body: data
+      })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = '/';
+        } else {
+          alert('Error: ' + response.statusText);
+        }
+      })
+      .catch(error => {
+        alert('Network error: ' + error.message);
+      });
+    }
+  }
+
+  function getId() {
+    return window.location.hash.replace('#network_', '');
+  }
+
+  function deauth() {
+    if (confirm('Start deauth attack on ' + selectedNetwork + ' network?')) {
+      window.location.href = '/doDeauth?id=' + getId();
+    }
+  }
+
+  function beaconSpam() {
+    if (confirm('Start beacon spam attack on ' + selectedNetwork + ' network?')) {
+      window.location.href = '/runBeaconSpam';
+    }
+  }
+
+  function showDetail(jsonText) {
+    const network = JSON.parse(jsonText);
+
+    const container = document.getElementById('card-container');
+    container.innerHTML = '';
+
+    const template = document.getElementById('card-template');
+    const clone = template.content.cloneNode(true);
+
+    selectedNetwork = network.name;
+    clone.querySelector('h2').textContent = network.name;
+    clone.querySelector('#channel').textContent = network.channel;
+    clone.querySelector('#bssid').textContent = network.bssid;
+    clone.querySelector('#encryptation').textContent = network.encryptation;
+    clone.querySelector('#rssi').textContent = network.rssi;
+    clone.querySelector('#distance').textContent = network.distance;
+
+    container.appendChild(clone);
+}
+</script>

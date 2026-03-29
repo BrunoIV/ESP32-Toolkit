@@ -18,6 +18,7 @@ private:
     String getMenu(const String& menuName);
 
     void handleEdit();
+    void handleBluetooth();
     void handleBleStart();
     void handleBleStop();
     void handleCreateNetwork();
@@ -30,7 +31,7 @@ private:
     String getMainTemplate(String title, String menu);
     void handleStatus();
     void handleFiles();
-    void handleConnectWifi();
+    void handleWifiList();
     void handleDeauther();
     void handleBadUsb();
     void handleBadUsbPayload();
