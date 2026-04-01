@@ -5,7 +5,7 @@
 #include "USB.h"
 #include "USBHIDKeyboard.h"
 #include "USBHIDMouse.h"
-#include "MenuItem.h"
+#include "models/MenuItem.h"
 #include <map>
 
 

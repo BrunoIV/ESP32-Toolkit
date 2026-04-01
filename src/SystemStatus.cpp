@@ -1,5 +1,6 @@
 #include "SystemStatus.h"
 #include <LittleFS.h>
+#include <WiFi.h>
 
 UsageStats SystemStatus::getStorageStatus() {
     return UsageStats(LittleFS.totalBytes(), LittleFS.usedBytes());
@@ -11,6 +12,18 @@ UsageStats SystemStatus::getMemoryStatus() {
     size_t used = total - free;
 
     return UsageStats(total, used);
+}
+
+NetworkInfo SystemStatus::getNetworkInfo() {
+  NetworkInfo networkInfo;
+  networkInfo.dns = WiFi.dnsIP().toString();
+  networkInfo.mac = WiFi.macAddress();
+  networkInfo.ssid = WiFi.SSID();
+  networkInfo.gateway = WiFi.gatewayIP().toString();
+  networkInfo.mask = WiFi.subnetMask().toString();
+  networkInfo.ip = WiFi.localIP().toString();
+  networkInfo.signal = WiFi.RSSI();
+  return networkInfo;
 }
 
 void SystemStatus::restart() {

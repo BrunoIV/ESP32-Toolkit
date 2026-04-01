@@ -1,18 +1,17 @@
 #include "ServerManager.h"
 #include "Storage.h"
-
+#include <WebServer.h>
 #include <WifiManager.h>
 #include <WebServer.h>
 #include "secrets.h"
 #include "WifiNetwork.h"
-#include "MenuItem.h"
 #include "BadUSB.h"
 #include "Deauther.h"
 #include "Bluetooth.h"
 #include "Utils.h"
 #include "SystemStatus.h"
-#include "models/UsageStats.h"
 #include <map>
+#include <TemplateManager.h>
 
 //#include <ESPAsyncWebServer.h>
 
@@ -31,7 +30,6 @@ ServerManager::ServerManager() {
   server.on("/doCreateNetwork", HTTP_POST, [this]() { handleDoCreateNetwork(); });
   server.on("/doCreateFile", HTTP_POST, [this]() { handleDoCreateFile(); });
   server.on("/stopNetworks", [this]() { handleStopNetworks(); });
-  server.on("/deauther", [this]() { handleDeauther(); });
   server.on("/doDeauth", [this]() { handleDoDeauth(); });
   server.on("/doStopDeauth", [this]() { handleStopDeauth(); });
   server.on("/runBeaconSpam", [this]() { 
@@ -63,36 +61,15 @@ void ServerManager::begin() {
   server.begin();
 }
 
-String ServerManager::getMainTemplate(String title, String menu) {
-  String html = Storage::readFile("/templates/cmn/index.html");
-  String stylesText = Storage::readFile("/styles.css");
-  html.replace("{{TITLE}}", title);
-  html.replace("{{MENU}}", menu);
-  html.replace("<link rel='stylesheet' href='styles.css' />", "<style>" + stylesText + "</style>");
-  return html;
-}
-
 void ServerManager::handleRoot() {
-  sendHtml(getMainTemplate("ESP32 Toolkit", getMenu("main")));
-}
-
-
-String ServerManager::getMenu(const String& menuName) {
-    std::vector<MenuItem> menuItems = {
-        MenuItem("main", "wifi", "Wifi", "wifi", {}),
-        MenuItem("main", "bluetooth", "Bluetooth", "bluetooth",{}),
-        MenuItem("main", "files", "Files", "folder",{}),
-        MenuItem("main", "badUsb", "Bad USB", "usb",{}),
-        MenuItem("main", "status", "Status", "chip",{}),
-    };
-
-    
-    String menu = "<div class='list'>";
-    for (const auto& item : menuItems) {
-      menu += item.toString();
-    }
-    
-    return menu + "</div>";
+  std::vector<MenuItem> menuItems = {
+    MenuItem("main", "wifi", "Wifi", "wifi", {}),
+    MenuItem("main", "bluetooth", "Bluetooth", "bluetooth",{}),
+    MenuItem("main", "files", "Files", "folder",{}),
+    MenuItem("main", "badUsb", "Bad USB", "usb",{}),
+    MenuItem("main", "status", "Status", "chip",{}),
+  };
+  sendHtml(TemplateManager::getIndex(menuItems));
 }
 
 void ServerManager::sendHtml(String html) {
@@ -114,18 +91,7 @@ void ServerManager::handleEdit() {
   if (server.hasArg("file")) {
     String filePath = server.arg("file");
     String text = Storage::readFile(filePath);
-
-
-    
-    
-    html = Storage::readFile("/editor.html");
-    html.replace("{{FILE_NAME}}", filePath);
-    html.replace("{{TEXT}}", Utils::escapeHTML(text));
-
-    String fullPage = getMainTemplate(filePath, html);
-    fullPage.replace("<!-- right_icons -->", "<a onclick='save()' href='#'><svg><use href='#save' /></svg></a>");
-    sendHtml(fullPage);
-    
+    sendHtml(TemplateManager::getTextEditor(filePath, text));
   } else {
     Serial.println("Param 'file' not found");
   }
@@ -136,10 +102,7 @@ void ServerManager::handleEdit() {
 
 
 void ServerManager::handleBluetooth(){
-  String details = Storage::readFile("/templates/bluetooth/bluetooth.html");
-  String tpl = getMainTemplate("WiFi Networks", details);
-//  tpl.replace("<!-- right_icons -->", "<a onclick='history.back()' href='#'><svg><use href='#save' /></svg></a>");
-  sendHtml(tpl);
+  sendHtml(TemplateManager::getBluetoothList());
 }
 
 void ServerManager::handleBleStart(){
@@ -153,7 +116,7 @@ void ServerManager::handleBleStop(){
 }
 
 void ServerManager::handleCreateNetwork() {
-  sendHtml(getMainTemplate("Create Network", Storage::readFile("/create_network.html")));
+  sendHtml(TemplateManager::getCreateNetwork());
 }
 
 void ServerManager::handleStopNetworks() {
@@ -195,7 +158,7 @@ void ServerManager::handleDoConnectWifi() {
   if (server.hasArg("network_name") && server.hasArg("network_password")) {
     WifiManager::connect(server.arg("network_name"), server.arg("network_password"));
   } else {
-    Serial.println("Params not found");
+    Serial.println(F("Params not found"));
   }
 
   redirect("/");
@@ -218,60 +181,16 @@ void ServerManager::handleDoCreateFile() {
 
 
 void ServerManager::handleStatus(){
-  String returnHtml = "";
-  
   UsageStats storageStatus = SystemStatus::getStorageStatus();
-  String html = Storage::readFile("/chart.html");
-  html.replace("{{CHART_TITLE}}", "Storage");
-  html.replace("{{FREE_STORAGE}}", String(storageStatus.getFreeAsKb()));
-  html.replace("{{VAL1}}", String(storageStatus.getPercentUsed()));
-  html.replace("{{VAL2}}", String(storageStatus.getPercentUsed()));
-  html.replace("{{1}}", String(storageStatus.getUsedAsKb()));
-  html.replace("{{2}}", String(storageStatus.getTotalAsKb()));
-  returnHtml += html;
-
-
   UsageStats memoryStatus = SystemStatus::getMemoryStatus();
-  html = Storage::readFile("/chart.html");
-  html.replace("{{CHART_TITLE}}", "RAM");
-  html.replace("{{FREE_STORAGE}}", String(memoryStatus.getFreeAsKb()));
-  html.replace("{{VAL1}}", String(memoryStatus.getPercentUsed()));
-  html.replace("{{VAL2}}", String(memoryStatus.getPercentUsed()));
-  html.replace("{{1}}", String(memoryStatus.getUsedAsKb()));
-  html.replace("{{2}}", String(memoryStatus.getTotalAsKb()));
-  returnHtml += html;
-
-
-  html = Storage::readFile("/templates/status/network.html");
-  html.replace("{{IP}}", WiFi.localIP().toString());
-  html.replace("{{MASK}}", WiFi.subnetMask().toString());
-  html.replace("{{GATEWAY}}", WiFi.gatewayIP().toString());
-  html.replace("{{DNS}}", WiFi.dnsIP().toString());
-  html.replace("{{MAC}}", WiFi.macAddress());
-  html.replace("{{NETWORK}}", WiFi.SSID());
-  html.replace("{{SIGNAL}}", String(WiFi.RSSI()));
-  returnHtml += html;
-
-  sendHtml(getMainTemplate("Status", returnHtml));
+  NetworkInfo networkInfo = SystemStatus::getNetworkInfo();
+  sendHtml(TemplateManager::getSystemStatus(storageStatus, memoryStatus, networkInfo));
 }
 
 
 void ServerManager::handleFiles(){
   std::vector<String> files = Storage::listDir("/");
-  
-  String stringFiles = "";
-  for (const auto& file : files) {
-    stringFiles+= "'" + file + "',";
-  }
-
-  String tplFiles = Storage::readFile("/templates/files.html");
-  tplFiles.replace("/*paths*/", stringFiles);
-
-  String tpl = getMainTemplate("Files", tplFiles);
-
-  String floatingMenu = Storage::readFile("/templates/cmn/float_menu.html");
-  tpl.replace("<!-- floating_menu -->", floatingMenu);
-  sendHtml(tpl);
+  sendHtml(TemplateManager::getFiles(files));
 }
 
 
@@ -281,52 +200,12 @@ void ServerManager::handleWifiList(){
     networks = WifiManager::getNetworks();
   }
 
-  String wifiString = "<div class='list'>";
-  int i = 0;
-  for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "#network_" + String(i), network.getName(), "wifi", { {"onclick", "showDetail(\"" + network.getAsJson() + "\")" } });
-    wifiString+= menu.toString();
-    i++;
-  }
-  wifiString += "</div>";
-  String details = Storage::readFile("/templates/wifi/details.html");
-  String tpl = getMainTemplate("WiFi Networks", wifiString + details);
-  tpl.replace("<!-- right_icons -->", "<a onclick='history.back()' href='#'><svg><use href='#save' /></svg></a>");
-
-  sendHtml(tpl);
-}
-
-void ServerManager::handleDeauther(){
-  networks = WifiManager::getNetworks();
-
-  String wifiString = "<div class='list'>";
-  MenuItem menuAll = MenuItem("", "/doDeauth?id=ALL", "All networks", "wifi", {});
-  wifiString+= menuAll.toString();
-
-  int i=0;
-  for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "/doDeauth?id=" + String(i), network.getName(), "wifi", {});
-    wifiString+= menu.toString();
-    i++;
-  }
-  
-  wifiString += "</div>";
-  sendHtml(getMainTemplate("Deauther", wifiString));
+  sendHtml(TemplateManager::getNetworks(networks));
 }
 
 void ServerManager::handleBadUsb() {
   std::vector<String> files = BadUSB::list();
- 
-  String stringFiles = "";
-  for (const auto& file : files) {
-    stringFiles+= "'" + file + "',";
-  }
-
-  String tplFiles = Storage::readFile("/templates/files.html");
-  tplFiles.replace("/*paths*/", stringFiles);
-  tplFiles.replace("/edit?", "/badUsbPayload?");
-
-  sendHtml(getMainTemplate("Bad USB Payloads", tplFiles));
+  sendHtml(TemplateManager::getBadUsbPayloads(files));
 }
 
 void ServerManager::handleBadUsbPayload() {

@@ -1,7 +1,8 @@
 #pragma once
-#include <WebServer.h>
 #include <vector>
 #include "WifiNetwork.h"
+#include "models/MenuItem.h"
+#include "models/UsageStats.h"
 
 class ServerManager {
 public:
@@ -32,7 +33,6 @@ private:
     void handleStatus();
     void handleFiles();
     void handleWifiList();
-    void handleDeauther();
     void handleBadUsb();
     void handleBadUsbPayload();
     void handleDoDeauth();

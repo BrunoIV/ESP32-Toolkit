@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <vector>
-#include "MenuItem.h"
+#include "models/MenuItem.h"
 
 class BadUSB {
 public:
