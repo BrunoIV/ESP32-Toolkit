@@ -2,8 +2,7 @@
 #include "Bluetooth.h"
 #include "WifiManager.h"
 #include "ServerManager.h"
-
-ServerManager server;
+ServerManager serverManager;
 
 void setup() {
   Serial.begin(115200);
@@ -14,12 +13,10 @@ void setup() {
 
   delay(100);
 
-  server.begin();
+  serverManager.begin();
 }
 
 void loop() {
-  server.handleClient();
-
   if (Bluetooth::isRunning()) {
     Bluetooth::spamBLE();
   }

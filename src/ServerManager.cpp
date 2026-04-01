@@ -1,8 +1,6 @@
 #include "ServerManager.h"
 #include "Storage.h"
-#include <WebServer.h>
 #include <WifiManager.h>
-#include <WebServer.h>
 #include "secrets.h"
 #include "WifiNetwork.h"
 #include "BadUSB.h"
@@ -12,56 +10,62 @@
 #include "SystemStatus.h"
 #include <map>
 #include <TemplateManager.h>
+#include <ESPAsyncWebServer.h>
 
-//#include <ESPAsyncWebServer.h>
+void ServerManager::setUpRoutes() {
+  server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) { handleRoot(request); });
 
-ServerManager::ServerManager() {
-  server.on("/", [this]() { handleRoot(); });
+  // Files
+  server.on("/files", HTTP_GET, [this](AsyncWebServerRequest *request) { handleFiles(request); });
+  server.on("/edit", HTTP_GET, [this](AsyncWebServerRequest *request) { handleEdit(request); });
+  server.on("/save", HTTP_POST, [this](AsyncWebServerRequest *request) { handleSave(request); });
 
-  //Files
-  server.on("/files", [this]() { handleFiles(); });
-  server.on("/edit", [this]() { handleEdit(); });
-  server.on("/save", HTTP_POST, [this]() { handleSave(); });
+  // WiFi
+  server.on("/wifi", HTTP_GET, [this](AsyncWebServerRequest *request) { handleWifiList(request); });
+  server.on("/doConnectWifi", HTTP_POST, [this](AsyncWebServerRequest *request) { handleDoConnectWifi(request); });
+  server.on("/createNetwork", HTTP_GET, [this](AsyncWebServerRequest *request) { handleCreateNetwork(request); });
+  server.on("/doCreateNetwork", HTTP_POST, [this](AsyncWebServerRequest *request) { handleDoCreateNetwork(request); });
+  server.on("/doCreateFile", HTTP_POST, [this](AsyncWebServerRequest *request) { handleDoCreateFile(request); });
+  server.on("/stopNetworks", HTTP_GET, [this](AsyncWebServerRequest *request) { handleStopNetworks(request); });
+  server.on("/doDeauth", HTTP_GET, [this](AsyncWebServerRequest *request) { handleDoDeauth(request); });
+  server.on("/doStopDeauth", HTTP_GET, [this](AsyncWebServerRequest *request) { handleStopDeauth(request); });
 
-  //WiFi
-  server.on("/wifi", [this]() { handleWifiList(); });
-  server.on("/doConnectWifi", HTTP_POST, [this]() { handleDoConnectWifi(); });
-  server.on("/createNetwork", [this]() { handleCreateNetwork(); });
-  server.on("/doCreateNetwork", HTTP_POST, [this]() { handleDoCreateNetwork(); });
-  server.on("/doCreateFile", HTTP_POST, [this]() { handleDoCreateFile(); });
-  server.on("/stopNetworks", [this]() { handleStopNetworks(); });
-  server.on("/doDeauth", [this]() { handleDoDeauth(); });
-  server.on("/doStopDeauth", [this]() { handleStopDeauth(); });
-  server.on("/runBeaconSpam", [this]() { 
+  server.on("/runBeaconSpam", HTTP_GET, [this](AsyncWebServerRequest *request) { 
     WifiManager::runBeaconSpam();
-    redirect("/"); 
+    redirect(request, "/"); 
   });
 
-  server.on("/stopBeaconSpam", [this]() { 
+  server.on("/stopBeaconSpam", HTTP_GET, [this](AsyncWebServerRequest *request) { 
     WifiManager::stopBeaconSpam();
-    redirect("/"); 
+    redirect(request, "/"); 
   });
 
+  // Bad USB
+  server.on("/badUsb", HTTP_GET, [this](AsyncWebServerRequest *request) { handleBadUsb(request); });
+  server.on("/badUsbPayload", HTTP_GET, [this](AsyncWebServerRequest *request) { handleBadUsbPayload(request); });
 
-  //Bad USB
-  server.on("/badUsb", [this]() { handleBadUsb(); });
-  server.on("/badUsbPayload", [this]() { handleBadUsbPayload(); });
-
-  //Bluetooth
-  server.on("/bluetooth", [this]() { handleBluetooth(); });
-  server.on("/bleStart", [this]() { handleBleStart(); });
-  server.on("/bleStop", [this]() { handleBleStop(); });
+  // Bluetooth
+  server.on("/bluetooth", HTTP_GET, [this](AsyncWebServerRequest *request) { handleBluetooth(request); });
+  server.on("/bleStart", HTTP_GET, [this](AsyncWebServerRequest *request) { handleBleStart(request); });
+  server.on("/bleStop", HTTP_GET, [this](AsyncWebServerRequest *request) { handleBleStop(request); });
 
   //System
-  server.on("/status", [this]() { handleStatus(); });
-  server.on("/restart", [this]() { SystemStatus::restart(); });
+  server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    handleStatus(request);
+  });
+
+  server.on("/restart", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    SystemStatus::restart();
+  });
+
 }
 
 void ServerManager::begin() {
+  ServerManager::setUpRoutes();
   server.begin();
 }
 
-void ServerManager::handleRoot() {
+void ServerManager::handleRoot(AsyncWebServerRequest *request) {
   std::vector<MenuItem> menuItems = {
     MenuItem("main", "wifi", "Wifi", "wifi", {}),
     MenuItem("main", "bluetooth", "Bluetooth", "bluetooth",{}),
@@ -69,106 +73,99 @@ void ServerManager::handleRoot() {
     MenuItem("main", "badUsb", "Bad USB", "usb",{}),
     MenuItem("main", "status", "Status", "chip",{}),
   };
-  sendHtml(TemplateManager::getIndex(menuItems));
+  sendHtml(request, TemplateManager::getIndex(menuItems));
 }
 
-void ServerManager::sendHtml(String html) {
-  server.send(200, "text/html", html);
+void ServerManager::sendHtml(AsyncWebServerRequest *request, String html) {
+    request->send(200, "text/html", html);
 }
 
-void ServerManager::redirect(String path) {
-  server.sendHeader("Location", path);
-  server.send(302, "text/plain", "");
+void ServerManager::redirect(AsyncWebServerRequest *request, String path) {
+  request->redirect(path);
 }
 
-void ServerManager::handleClient() {
-  server.handleClient();
-}
-
-
-void ServerManager::handleEdit() {
+void ServerManager::handleEdit(AsyncWebServerRequest *request) {
   String html = "";
-  if (server.hasArg("file")) {
-    String filePath = server.arg("file");
+  if (request->hasArg("file")) {
+    String filePath = request->arg("file");
     String text = Storage::readFile(filePath);
-    sendHtml(TemplateManager::getTextEditor(filePath, text));
+
+    Serial.println(TemplateManager::getTextEditor(filePath, text));
+    sendHtml(request, TemplateManager::getTextEditor(filePath, text));
   } else {
-    Serial.println("Param 'file' not found");
+    sendHtml(request, "Param 'file' not found");
   }
-
-  sendHtml(html);
 }
 
 
 
-void ServerManager::handleBluetooth(){
-  sendHtml(TemplateManager::getBluetoothList());
+void ServerManager::handleBluetooth(AsyncWebServerRequest *request){
+  sendHtml(request, TemplateManager::getBluetoothList());
 }
 
-void ServerManager::handleBleStart(){
+void ServerManager::handleBleStart(AsyncWebServerRequest *request){
   Bluetooth::enable();
-  redirect("/");
+  redirect(request, "/");
 }
 
-void ServerManager::handleBleStop(){
+void ServerManager::handleBleStop(AsyncWebServerRequest *request){
   Bluetooth::disable();
-  redirect("/");
+  redirect(request, "/");
 }
 
-void ServerManager::handleCreateNetwork() {
-  sendHtml(TemplateManager::getCreateNetwork());
+void ServerManager::handleCreateNetwork(AsyncWebServerRequest *request) {
+  sendHtml(request, TemplateManager::getCreateNetwork());
 }
 
-void ServerManager::handleStopNetworks() {
-  WiFi.softAPdisconnect(true);
-  redirect("/");
+void ServerManager::handleStopNetworks(AsyncWebServerRequest *request) {
+  //WiFi.softAPdisconnect(true);
+  redirect(request, "/");
 }
 
-void ServerManager::handleStopDeauth() {
+void ServerManager::handleStopDeauth(AsyncWebServerRequest *request) {
   Deauther::stop();
-  redirect("/");
+  redirect(request, "/");
 }
 
 
-void ServerManager::handleSave() {
-  if (server.hasArg("fileContent")) {
-    String text = server.arg("fileContent");
-    String name = server.arg("fileName");
+void ServerManager::handleSave(AsyncWebServerRequest *request) {
+  if (request->hasArg("fileContent")) {
+    String text = request->arg("fileContent");
+    String name = request->arg("fileName");
     
     Storage::writeFile(name, text);
   } else {
     Serial.println("Param 'fileContent' not found");
   }
 
-  redirect("/files");
-
+  redirect(request, "/files");
 }
 
-void ServerManager::handleDoCreateNetwork() {
-  if (server.hasArg("network_name") && server.hasArg("network_password")) {
-    WifiManager::create(server.arg("network_name"), server.arg("network_password"));
+void ServerManager::handleDoCreateNetwork(AsyncWebServerRequest *request) {
+  if (request->hasArg("network_name") && request->hasArg("network_password")) {
+    WifiManager::create(request->arg("network_name"), request->arg("network_password"));
   } else {
     Serial.println("Params not found");
   }
 
-  redirect("/");
+  redirect(request, "/");
 }
 
-void ServerManager::handleDoConnectWifi() {
-  if (server.hasArg("network_name") && server.hasArg("network_password")) {
-    WifiManager::connect(server.arg("network_name"), server.arg("network_password"));
+void ServerManager::handleDoConnectWifi(AsyncWebServerRequest *request) {
+  if (request->hasArg("network_name") && request->hasArg("network_password")) {
+    WifiManager::connect(request->arg("network_name"), request->arg("network_password"));
   } else {
     Serial.println(F("Params not found"));
   }
 
-  redirect("/");
+  redirect(request, "/");
 }
 
-void ServerManager::handleDoCreateFile() {
-  if (server.hasArg("name") && server.hasArg("type")) {
-    String name = server.arg("name");
+void ServerManager::handleDoCreateFile(AsyncWebServerRequest *request) {
+  if (request->hasArg("name") && request->hasArg("type")) {
+    String name = request->arg("name");
 
-    if(server.arg("type") == "folder") {
+    if(request->arg("type") == "folder") {
       Storage::mkdir(name);
     } else {
       Storage::writeFile(name, "");
@@ -180,52 +177,52 @@ void ServerManager::handleDoCreateFile() {
 }
 
 
-void ServerManager::handleStatus(){
+void ServerManager::handleStatus(AsyncWebServerRequest *request){
   UsageStats storageStatus = SystemStatus::getStorageStatus();
   UsageStats memoryStatus = SystemStatus::getMemoryStatus();
   NetworkInfo networkInfo = SystemStatus::getNetworkInfo();
-  sendHtml(TemplateManager::getSystemStatus(storageStatus, memoryStatus, networkInfo));
+  sendHtml(request, TemplateManager::getSystemStatus(storageStatus, memoryStatus, networkInfo));
 }
 
 
-void ServerManager::handleFiles(){
+void ServerManager::handleFiles(AsyncWebServerRequest *request){
   std::vector<String> files = Storage::listDir("/");
-  sendHtml(TemplateManager::getFiles(files));
+  sendHtml(request, TemplateManager::getFiles(files));
 }
 
 
 
-void ServerManager::handleWifiList(){
+void ServerManager::handleWifiList(AsyncWebServerRequest *request){
   if (networks.empty()) {
     networks = WifiManager::getNetworks();
   }
 
-  sendHtml(TemplateManager::getNetworks(networks));
+  sendHtml(request, TemplateManager::getNetworks(networks));
 }
 
-void ServerManager::handleBadUsb() {
+void ServerManager::handleBadUsb(AsyncWebServerRequest *request) {
   std::vector<String> files = BadUSB::list();
-  sendHtml(TemplateManager::getBadUsbPayloads(files));
+  sendHtml(request, TemplateManager::getBadUsbPayloads(files));
 }
 
-void ServerManager::handleBadUsbPayload() {
+void ServerManager::handleBadUsbPayload(AsyncWebServerRequest *request) {
 
-  if(server.hasArg("file")) {
-    BadUSB::run(server.arg("file"));
+  if(request->hasArg("file")) {
+    BadUSB::run(request->arg("file"));
   }
-  redirect("/badUsb");
+  redirect(request, "/badUsb");
 }
 
 
 
-void ServerManager::handleDoDeauth() {
-  if(server.hasArg("id")) {
-    WifiNetwork n = networks[server.arg("id").toInt()];
+void ServerManager::handleDoDeauth(AsyncWebServerRequest *request) {
+  if(request->hasArg("id")) {
+    WifiNetwork n = networks[request->arg("id").toInt()];
     Deauther::start(n);
-    server.send(200, "text/html", n.toString());
+    sendHtml(request, n.toString());
+  } else {
+    sendHtml(request, "Param 'id' not found");
   }
-
-  server.send(200, "text/html", "Err");
 }
 
 
