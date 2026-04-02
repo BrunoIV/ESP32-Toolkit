@@ -6,9 +6,8 @@
 
 class MenuItem {
   public:
-    MenuItem(String category, String url, String name, String icon, std::map<String, String> extraAttributes);
+    MenuItem(String url, String name, String icon, std::map<String, String> extraAttributes);
 
-    String getCategory() const;
     String getUrl() const;
     String getName() const;
     String getIcon() const;
@@ -16,7 +15,6 @@ class MenuItem {
     String toString() const;
 
   private:
-    String category;
     String url;
     String name;
     String icon;
