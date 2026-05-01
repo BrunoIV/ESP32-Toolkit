@@ -1,0 +1,132 @@
+<div class="p card hide-on-hash">
+  <h3>Network</h3>
+  <table>
+    <tr>
+      <td>IP</td>
+      <td>{{IP}}</td>
+    </tr>
+    <tr>
+      <td>Mask</td>
+      <td>{{MASK}}</td>
+    </tr>
+    <tr>
+      <td>Gateway</td>
+      <td>{{GATEWAY}}</td>
+    </tr>
+    <tr>
+      <td>DNS</td>
+      <td>{{DNS}}</td>
+    </tr>
+    <tr>
+      <td>MAC</td>
+      <td>{{MAC}}</td>
+    </tr>
+    <tr>
+      <td>Network</td>
+      <td>{{NETWORK}}</td>
+    </tr>
+    <tr>
+      <td>Signal</td>
+      <td>{{SIGNAL}} dBm</td>
+    </tr>
+    <tr>
+      <td>Distance (estimated)</td>
+      <td>{{DISTANCE}}</td>
+    </tr>
+  </table>
+</div>
+
+<div id="menu_buttons" class="card card-buttons hide-on-hash">
+  <a href="#scan-ips"><svg>
+      <use href="#connect" />
+    </svg> <span>Scan IP's</span></a>
+  <a href="#scan-ports"><svg>
+      <use href="#skull" />
+    </svg> <span>Scan Ports</span></a>
+</div>
+
+<div id="output" class="show-by-hash">
+  <div class="p card">
+    <table>
+      <tbody id="scan_report">
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let evt;
+
+  function readReport(event, url) {
+    event.preventDefault();
+    window.location.hash = '#output';
+    document.getElementById('scan_report').innerHTML = '';
+
+    if (evt) evt.close();
+
+    // First start the process
+    fetch(url, {
+      method: 'POST',
+      body: new FormData(event.target)
+    })
+      .then(() => {
+        // Then open the SSE
+        evt = new EventSource('/scanPortsReport');
+
+        evt.onmessage = (e) => {
+          document.getElementById('scan_report').innerHTML += '<tr><td>' + e.data + '</td></tr>';
+        };
+
+        evt.addEventListener("done", () => {
+          evt.close();
+        });
+
+        evt.onerror = (e) => {
+          console.error("SSE error", e);
+        };
+      });
+  }
+
+  function handleScanIps(event) {
+    readReport(event, '/network/scanIps');
+  }
+
+  function handleScanPorts(event) {
+    readReport(event, '/network/scanPorts');
+  }
+</script>
+
+<div id="scan-ips" class="card p show-by-hash">
+  <h2>Scan IP Addresses</h2>
+
+  <form class="md-form" onsubmit="handleScanIps(event)">
+    <div class="form-group">
+      <input name="ip_start" type="text" placeholder=" " value="192.168.1.1" id="ip_start"
+        pattern="^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$" required>
+      <label for="ip_start">IP Start</label>
+    </div>
+
+    <div class="form-group">
+      <input name="ip_end" type="text" placeholder=" " value="192.168.1.255" id="ip_end"
+        pattern="^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$" required>
+      <label for="ip_end">IP End</label>
+    </div>
+
+    <input type="submit" value="Scan IPs" class="md-btn float-right">
+  </form>
+</div>
+
+<div id="scan-ports" class="card p show-by-hash">
+  <h2>Scan Ports</h2>
+
+  <form class="md-form" onsubmit="handleScanPorts(event)">
+    <div class="form-group">
+      <input name="ip" type="text" placeholder=" " value="192.168.1.1" id="ip_scan"
+        pattern="^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$" required>
+      <label for="ip_scan">IP</label>
+    </div>
+
+    <input type="submit" value="Scan Ports" class="md-btn float-right">
+  </form>
+</div>
