@@ -2,9 +2,6 @@
 #include "models/MenuItem.h"
 #include <LittleFS.h>
 
-#define FORMAT_LittleFS_IF_FAILED true
-#define FILEBUFSIZ 4096
-
 void Storage::init() {
   if (!LittleFS.begin(true)) { //format if fails
     Serial.println("LittleFS Mount Failed");
