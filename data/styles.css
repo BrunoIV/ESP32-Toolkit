@@ -11,12 +11,12 @@
 * {
 	padding: 0;
 	margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
 	box-sizing: border-box;
 }
 
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
     background-color: #fafbfb;
 }
 
@@ -26,7 +26,6 @@ a {
     cursor: pointer;
 }
 
-.hidden { display: none; }
 
 
 /* Dropdown menu, floating_menu */
@@ -39,6 +38,7 @@ input[type="checkbox"].hidden:checked ~ div, #check_floating_menu:checked ~ a {
 }
 
 
+/* Header */
 header {
     background: var(--accent-color);
     color: var(--accent-color-text);
@@ -51,9 +51,7 @@ header {
     box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
 }
 
-header h2 {
-    flex: 1;
-}
+header h2 { flex: 1; }
 
 header a {
     display: inline-block;
@@ -116,29 +114,6 @@ svg {
     text-align: center;
 }
 
-/*Sub-menus and sub-sub-menus*/
-.list > div > div, .list > div > div div {
-    padding-left: 40px;
-}
-
-
-/* Dropdown menu */
-.dropdown {
-    display: none;
-    position: absolute;
-    right: 0;
-    z-index: 1;
-    background-color: #fff;
-}
-
-.dropdown > div {
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    padding: 12px 16px;
-}
-
-
 
 /* Floating menu (create in files for example) */
 .floating_menu {
@@ -173,34 +148,40 @@ svg {
 
 
 
-
-
-
-
-/* Menu icon */
-input[type=checkbox]:checked ~ ul {
-    display: block;
-}
-
-
-.p {
-    padding: 1.2rem;
-}
-
+/* Helpers */
+.p { padding: 1.2rem;}
 .p-1 { padding: 8px; }
 .p-2 { padding: 16px; }
+.hidden { display: none; }
+.float-right { float: right; }
+.align-right { text-align: right; }
+.show-by-hash { display: none; }
+.show-by-hash:target { display: block; }
+.d-none { display: none;}
+.d-block { display: block;}
 
 
+/* Reset CSS */
 h1,h2,h3,h4,h5 { font-weight: normal; margin: 0;}
-h1 { font-size: 2rem; }
+h1 { font-size: 22px; }
 h2 { font-size: 1.5rem; }
 h3 { font-size: 1.3rem; }
 
 
-table { width: 100%; border-radius: var(--border-radius); border: 1px solid var(--border-color); border-bottom: 0; }
+table { 
+    width: 100%; 
+    border-radius: var(--border-radius); 
+    border: 1px solid var(--border-color); 
+    border-bottom: 0; 
+    border-collapse: separate; 
+    border-spacing: 0;
+    overflow: hidden;
+}
+
 table tr td:nth-child(2) {
     text-align: right;
 }
+
 td { padding: 5px 10px; border-bottom: 1px solid var(--border-color); }
 
 
@@ -211,6 +192,10 @@ td { padding: 5px 10px; border-bottom: 1px solid var(--border-color); }
     margin: 16px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
     overflow: hidden;
+}
+
+.card h2, .card h3 {
+    margin-bottom: 8px;
 }
 
 .card.card-buttons > a {
@@ -233,4 +218,90 @@ td { padding: 5px 10px; border-bottom: 1px solid var(--border-color); }
     fill: #000;
     padding: 0;
     margin-right: 16px;
+}
+
+
+/* Form */
+.md-form .form-group {
+  position: relative;
+  margin: 20px 0;
+}
+
+.md-form input[type=text], 
+.md-form input[type=password], 
+.md-form input[type=email], 
+.md-form input[type=number] {
+  width: 100%;
+  padding: 12px 12px 12px 12px;
+  font-size: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  outline: none;
+}
+
+.md-form label {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  background: #fff;
+  padding: 0 4px;
+  color: #999;
+  font-size: 16px;
+  pointer-events: none;
+  transition: 0.2s ease all;
+}
+
+.md-form :focus + label,
+.md-form input:not(:placeholder-shown) + label {
+  top: -8px;
+  left: 8px;
+  font-size: 12px;
+}
+
+
+
+
+.md-btn {
+  padding: 12px;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--accent-color);
+  color: var(--accent-color-text);
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover (desktop) */
+.md-btn:hover {
+  background: #303f9f;
+}
+
+/* Click (active) */
+.md-btn:active {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2) inset;
+}
+
+/* Focus accesible */
+.md-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(63,81,181,0.3);
+}
+
+/* Ripple simple */
+.md-btn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.md-btn:active::after {
+  width: 200px;
+  height: 200px;
 }
