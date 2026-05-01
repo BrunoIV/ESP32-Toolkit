@@ -17,4 +17,5 @@ public:
     static String getCreateNetwork();
     static String getBluetoothList();
     static String getIndex(const std::vector<MenuItem>& menuItems);
+    static String getNetworkMenu(NetworkInfo networkInfo);
 };

@@ -24,6 +24,8 @@ void loop() {
   if (WifiManager::isRunningBeaconSpam()) {
     WifiManager::beaconSpam();
   }
+
+  serverManager.readAsyncReport();
   
   delay(100);
 }

@@ -11,8 +11,13 @@
 #include <map>
 #include <TemplateManager.h>
 #include <ESPAsyncWebServer.h>
+#include <Scanner.h>
+String scanResult = "";
+
+AsyncEventSource events("/scanPortsReport");
 
 void ServerManager::setUpRoutes() {
+
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) { handleRoot(request); });
 
   // Files
@@ -49,6 +54,12 @@ void ServerManager::setUpRoutes() {
   server.on("/bleStart", HTTP_GET, [this](AsyncWebServerRequest *request) { handleBleStart(request); });
   server.on("/bleStop", HTTP_GET, [this](AsyncWebServerRequest *request) { handleBleStop(request); });
 
+
+  //Network
+  server.on("/network", HTTP_GET, [this](AsyncWebServerRequest *request) { handleNetwork(request); });
+  server.on("/network/scanPorts", HTTP_POST, [this](AsyncWebServerRequest *request) { handleScanPorts(request); });
+  server.on("/network/scanIps", HTTP_POST, [this](AsyncWebServerRequest *request) { handleScanIps(request); });
+  
   //System
   server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
     handleStatus(request);
@@ -62,16 +73,31 @@ void ServerManager::setUpRoutes() {
 
 void ServerManager::begin() {
   ServerManager::setUpRoutes();
+  server.addHandler(&events);
   server.begin();
+}
+
+void ServerManager::readAsyncReport() {
+
+  Scanner::scanCommonPorts([&](const String& msg){
+    if (msg == "DONE") {
+      events.send("ok", "done");
+    } else {
+      Serial.println(msg.c_str());
+      events.send(msg.c_str(), "message");
+    }
+  });
+
 }
 
 void ServerManager::handleRoot(AsyncWebServerRequest *request) {
   std::vector<MenuItem> menuItems = {
-    MenuItem("main", "wifi", "Wifi", "wifi", {}),
-    MenuItem("main", "bluetooth", "Bluetooth", "bluetooth",{}),
-    MenuItem("main", "files", "Files", "folder",{}),
-    MenuItem("main", "badUsb", "Bad USB", "usb",{}),
-    MenuItem("main", "status", "Status", "chip",{}),
+    MenuItem("wifi", "Wifi", "wifi", {}),
+    MenuItem("bluetooth", "Bluetooth", "bluetooth",{}),
+    MenuItem("network", "Network", "network",{}),
+    MenuItem("files", "Files", "folder",{}),
+    MenuItem("badUsb", "Bad USB", "usb",{}),
+    MenuItem("status", "Status", "chip",{}),
   };
   sendHtml(request, TemplateManager::getIndex(menuItems));
 }
@@ -97,6 +123,27 @@ void ServerManager::handleEdit(AsyncWebServerRequest *request) {
   }
 }
 
+
+void ServerManager::handleNetwork(AsyncWebServerRequest *request){
+  NetworkInfo networkInfo = SystemStatus::getNetworkInfo();
+  sendHtml(request, TemplateManager::getNetworkMenu(networkInfo));
+}
+
+
+void ServerManager::handleScanPorts(AsyncWebServerRequest *request){
+  String ip = request->arg("ip");
+  Scanner::startScanPort(ip);
+  request->send(200, "text/plain", "ok");
+}
+
+void ServerManager::handleScanIps(AsyncWebServerRequest *request){
+  String ipStart = request->arg("ip_start");
+  String ipEnd = request->arg("ip_end");
+  if(Utils::isValidIPv4(ipStart) && Utils::isValidIPv4(ipEnd)) {
+    Scanner::startScanIp(ipStart, ipEnd);
+  }
+  request->send(200, "text/plain", "ok");
+}
 
 
 void ServerManager::handleBluetooth(AsyncWebServerRequest *request){

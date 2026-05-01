@@ -10,6 +10,7 @@ public:
     void setUpRoutes();
     void begin();
     void handleClient(AsyncWebServerRequest *request);
+    void readAsyncReport();
     
 private:
     AsyncWebServer server;
@@ -31,7 +32,6 @@ private:
     void handleDoCreateNetwork(AsyncWebServerRequest *request);
     void handleDoConnectWifi(AsyncWebServerRequest *request);
     void handleDoCreateFile(AsyncWebServerRequest *request);
-    String getMainTemplate(String title, String menu);
     void handleStatus(AsyncWebServerRequest *request);
     void handleFiles(AsyncWebServerRequest *request);
     void handleWifiList(AsyncWebServerRequest *request);
@@ -39,4 +39,7 @@ private:
     void handleBadUsbPayload(AsyncWebServerRequest *request);
     void handleDoDeauth(AsyncWebServerRequest *request);
     void getNetworks(AsyncWebServerRequest *request);
+    void handleNetwork(AsyncWebServerRequest *request);
+    void handleScanPorts(AsyncWebServerRequest *request);
+    void handleScanIps(AsyncWebServerRequest *request);
 };

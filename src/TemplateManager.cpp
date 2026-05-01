@@ -37,7 +37,7 @@ String TemplateManager::getNetworks(const std::vector<WifiNetwork>& networks){
   String wifiString = "<div class='list'>";
   int i = 0;
   for (const auto& network : networks) {
-    MenuItem menu = MenuItem("", "#network_" + String(i), network.getName(), "wifi", { {"onclick", "showDetail(\"" + network.getAsJson() + "\")" } });
+    MenuItem menu = MenuItem("#network_" + String(i), network.getName(), "wifi", { {"onclick", "showDetail(\"" + network.getAsJson() + "\")" } });
     wifiString+= menu.toString();
     i++;
   }
@@ -130,4 +130,19 @@ String TemplateManager::getIndex(const std::vector<MenuItem>& menuItems) {
   menu += "</div>";
 
   return TemplateManager::getMainTemplate("ESP32 Toolkit", menu);
+}
+
+String TemplateManager::getNetworkMenu(NetworkInfo networkInfo) {
+  String html = Storage::readFile("/templates/network/network.html");
+
+  html.replace("{{IP}}", networkInfo.ip);
+  html.replace("{{MASK}}", networkInfo.mask);
+  html.replace("{{GATEWAY}}", networkInfo.gateway);
+  html.replace("{{DNS}}", networkInfo.dns);
+  html.replace("{{MAC}}", networkInfo.mac);
+  html.replace("{{NETWORK}}", networkInfo.ssid); //name
+  html.replace("{{SIGNAL}}", String(networkInfo.signal)); //rssi
+  html.replace("{{DISTANCE}}", String(networkInfo.getDistance())); //Estimated (very estimated)
+
+  return TemplateManager::getMainTemplate("Network", html);
 }
