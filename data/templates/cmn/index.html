@@ -72,5 +72,30 @@
       </main>
       
       <!-- floating_menu -->
+
+
+      <script type="text/javascript">
+
+         function hideOnHash() {
+            const elements = document.getElementsByClassName('hide-on-hash');
+
+            for (let i = 0; i < elements.length; i++) {
+               if (location.hash) {
+                  elements[i].classList.add('d-none');
+                  elements[i].classList.remove('d-block');
+               } else {
+                  elements[i].classList.remove('d-none');
+                  elements[i].classList.add('d-block');
+               }
+            }
+         }
+
+         //
+         window.addEventListener('hashchange', function() {
+            hideOnHash();
+         });
+
+         hideOnHash();
+      </script>
    </body>
 </html>
