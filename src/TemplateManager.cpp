@@ -6,10 +6,8 @@
 
 String TemplateManager::getMainTemplate(const String& title, const String& menu) {
   String html = Storage::readFile("/templates/cmn/index.html");
-  String stylesText = Storage::readFile("/styles.css");
   html.replace("{{TITLE}}", title);
   html.replace("{{MENU}}", menu);
-  html.replace("<link rel='stylesheet' href='styles.css' />", "<style>" + stylesText + "</style>");
   return html;
 }
 

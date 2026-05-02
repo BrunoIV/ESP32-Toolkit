@@ -12,6 +12,7 @@
 #include <TemplateManager.h>
 #include <ESPAsyncWebServer.h>
 #include <Scanner.h>
+#include <LittleFS.h>
 String scanResult = "";
 
 AsyncEventSource events("/scanPortsReport");
@@ -19,6 +20,7 @@ AsyncEventSource events("/scanPortsReport");
 void ServerManager::setUpRoutes() {
 
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) { handleRoot(request); });
+  server.serveStatic("/styles.css", LittleFS, "/styles.css").setCacheControl("public,max-age=31536000, inmutable");
 
   // Files
   server.on("/files", HTTP_GET, [this](AsyncWebServerRequest *request) { handleFiles(request); });
