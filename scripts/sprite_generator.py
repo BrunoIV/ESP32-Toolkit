@@ -5,7 +5,7 @@ input_dir = "images"
 output_file = "data/templates/cmn/icons.svg"
 
 with open(output_file, "w") as out:
-    out.write('<svg style="display:none;">\n')
+    out.write('<svg xmlns="http://www.w3.org/2000/svg">\n')
 
     for filename in os.listdir(input_dir):
         if not filename.endswith(".svg"):
