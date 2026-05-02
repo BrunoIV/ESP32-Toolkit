@@ -19,7 +19,7 @@ String MenuItem::toString() const {
   }
 
   html += ">";
-  html += "<svg><use href='#" + icon + "' /></svg>" + name + "<i>❯</i></a>";
+  html += "<svg><use href='/sprites.svg#" + icon + "' /></svg>" + name + "<i>❯</i></a>";
 
   return html;
 }

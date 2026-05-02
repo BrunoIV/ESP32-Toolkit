@@ -21,6 +21,7 @@ void ServerManager::setUpRoutes() {
 
   server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) { handleRoot(request); });
   server.serveStatic("/styles.css", LittleFS, "/styles.css").setCacheControl("public,max-age=31536000, inmutable");
+  server.serveStatic("/sprites.svg", LittleFS, "/templates/cmn/icons.svg").setCacheControl("public,max-age=31536000, inmutable");
 
   // Files
   server.on("/files", HTTP_GET, [this](AsyncWebServerRequest *request) { handleFiles(request); });
